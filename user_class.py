@@ -3,36 +3,36 @@ from common import all_priveleges
 
 
 class User:
-    def __init__(self, username="", pass_md5="", privileges="user"):
+    def __init__(self, username="", password="", privileges="user"):
         self.username = username
-        self.pass_md5 = pass_md5
+        self.password = password
         self.privileges = privileges
     
     def init_by_json(self, data):
         if "username" not in data:
-            return -1
+            return "Username not specified"
         
         username = data["username"]
         if type(username) != type(""):
-            return -1
+            return "Wrong username type"
         self.username = username
 
         if "password" not in data:
-            return -1
+            return "Password not specified"
         
-        pass_md5 = data["password"]
-        if type(pass_md5) != type(""):
-            return -1
-        self.pass_md5 = pass_md5
+        password = data["password"]
+        if type(password) != type(""):
+            return "Wrong password type"
+        self.password = password
             
         if "privileges" not in data:
-            return -1
+            return "Privileges not specified"
         
         privileges = data["privileges"]
         if type(privileges) != type(""):
-            return -1
+            return "Wrong privileges type"
         if privileges not in all_priveleges:
-            return -1
+            return "Wrong priveleges"
         self.privileges = privileges
-        
+
         return 0

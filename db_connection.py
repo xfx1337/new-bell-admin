@@ -8,12 +8,17 @@ def create_db():
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER,
         username TEXT,
-        pass_md5 TEXT,
+        password TEXT,
         privileges TEXT,
         PRIMARY KEY(id AUTOINCREMENT)
     ) 
     """)
 
+    connection.commit()
+
+    cursor.execute(f"""
+    INSERT INTO users (username, password, privileges) VALUES (?, ?, ?)
+    """, ["newbell", "Zvonki2023", "owner"])
     connection.commit()
 
     cursor.execute(f""" 

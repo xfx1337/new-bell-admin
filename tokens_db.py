@@ -22,11 +22,52 @@ def validate_token(req):
         return -1
     
     cursor.execute(f"""
-    SELECT username FROM tokens WHERE token = ?
+    SELECT * FROM tokens WHERE token = ?
     """, [req["token"]])    
     
-    data = cursor.fetchone()
-    if data == None:
-        return -1
+    content = cursor.fetchone()
+    if content == None:
+        return "Token not exists"
 
+    if datetime.now().timestamp() > content[3]:
+        return "Token expired"
+
+    return 0
+
+def get_token(username):
+    cursor.execute(f"""
+    SELECT * FROM tokens WHERE username = ?
+    """, [username])
+    content = cursor.fetchone()
+
+    if content == None:
+        return register(username)
+
+
+    if datetime.now().timestamp() > content[3]:
+        cursor.execute(f""""
+        DELETE * FROM tokens WHERE token = ?
+        """, [content[2]])
+        connection.commit()
+        return register(username)
+
+    renew_token(username)
+    return content[2]
+
+def renew_token(username):
+    cursor.execute(f"""
+    SELECT token FROM tokens WHERE username = ?
+    """, [username])
+    content = cursor.fetchone()
+
+    if content == None:
+        return register(username)
+    
+    expiration = datetime.now() + timedelta(hours=12)
+
+    cursor.execute(f"""
+    UPDATE tokens SET expiration = ? WHERE username = ?
+    """, [int(round(expiration.timestamp())), username])
+    connection.commit()
+    
     return 0
