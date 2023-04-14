@@ -1,5 +1,5 @@
 import sqlite3
-from db_connection import connection
+from db.connection import connection
 
 from uuid import uuid4
 from datetime import datetime, timedelta
@@ -53,6 +53,15 @@ def get_token(username):
 
     renew_token(username)
     return content[2]
+
+def get_username(token):
+    cursor.execute(f"""
+    SELECT username FROM tokens
+    WHERE TOKEN=?
+    """, [token])
+    connection.commit()
+
+    return cursor.fetchone()[0]
 
 def renew_token(username):
     cursor.execute(f"""

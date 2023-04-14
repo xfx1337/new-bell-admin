@@ -1,5 +1,5 @@
 import json
-from common import all_priveleges
+from common import all_privileges
 
 
 class User:
@@ -15,6 +15,7 @@ class User:
         username = data["username"]
         if type(username) != type(""):
             return "Wrong username type"
+        
         self.username = username
 
         if "password" not in data:
@@ -23,6 +24,7 @@ class User:
         password = data["password"]
         if type(password) != type(""):
             return "Wrong password type"
+        
         self.password = password
             
         if "privileges" not in data:
@@ -31,8 +33,10 @@ class User:
         privileges = data["privileges"]
         if type(privileges) != type(""):
             return "Wrong privileges type"
-        if privileges not in all_priveleges:
+        
+        if privileges not in all_privileges:
             return "Wrong priveleges"
+        
         self.privileges = privileges
 
         return 0

@@ -3,13 +3,15 @@ import sqlite3
 connection = sqlite3.connect('database.db', check_same_thread=False)
 cursor = connection.cursor()
 
-def create_db():
+def create_database():
     cursor.execute(f"""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER,
         username TEXT,
         password TEXT,
         privileges TEXT,
+        school TEXT,
+        cpu_temp
         PRIMARY KEY(id AUTOINCREMENT)
     ) 
     """)

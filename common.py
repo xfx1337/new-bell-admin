@@ -1,1 +1,1 @@
-all_priveleges = ["user", "admin", "monitor", "owner"]
+all_privileges = ["user", "admin", "monitor", "owner"]
