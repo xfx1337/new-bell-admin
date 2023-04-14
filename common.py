@@ -1,0 +1,1 @@
+all_priveleges = ["user", "admin", "monitor", "owner"]
