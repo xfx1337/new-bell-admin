@@ -3,7 +3,17 @@ import sqlite3
 connection = sqlite3.connect('database.db', check_same_thread=False)
 cursor = connection.cursor()
 
+def exists() -> bool:
+    cursor.execute(f"""
+    SELECT name FROM sqlite_master WHERE type='table' AND name='users';
+    """)
+
+    connection.commit()
+
+    return bool(len(cursor.fetchall()))
+
 def create_database():
+
     cursor.execute(f"""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER,
@@ -11,7 +21,7 @@ def create_database():
         password TEXT,
         privileges TEXT,
         school TEXT,
-        cpu_temp
+        cpu_temp TEXT,
         PRIMARY KEY(id AUTOINCREMENT)
     ) 
     """)
@@ -26,9 +36,9 @@ def create_database():
     cursor.execute(f""" 
     CREATE TABLE IF NOT EXISTS devices (
         id INTEGER,
+        verified INTEGER,
         name TEXT,
         host TEXT,
-        username TEXT,
         password TEXT,
         lastseen TEXT,
         region TEXT,

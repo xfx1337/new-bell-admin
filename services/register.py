@@ -1,12 +1,13 @@
 from user import User
-import db.tokens as tokens
-import db.users as users
+import db.tokens
+import db.users
+import db.devices
 import json
 
-def register(request):
+def register_user(request):
     if request.method == "POST":
         data = request.get_json()
-        if tokens.validate_token(data) != 0:
+        if not db.tokens.valid(data):
             return "Auth error", 400
         
         if "user" in data:
@@ -15,13 +16,26 @@ def register(request):
             if ret != 0:
                 return "Invalid user creditionals", 400
             
-            ret = users.register(user)
+            ret = db.users.register(user)
             if ret != 0:
                 return "User is already exists", 400
-            ret = tokens.register(user.username)
+            ret = db.tokens.register(user.username)
             ret = {"token": ret}
             return json.dumps(ret, indent=4), 200
         else:
             return "Invalid prompt", 400
     else:
         return "Invalid prompt", 400
+        
+def register_device(request):
+    data = request.get_json()
+
+    db.devices.add_unverified(name=data['name'], password=data['password'])
+
+    return 'Ok'
+
+def approve_device(request):
+    data = request.get_json()
+
+
+    return 'Ok'

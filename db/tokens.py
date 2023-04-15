@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 cursor = connection.cursor()
 
-def register(username):
+def register_user(username):
     rand_token = str(uuid4())
     expiration = datetime.now() + timedelta(hours=12)
 
@@ -17,22 +17,18 @@ def register(username):
 
     return rand_token
 
-def validate_token(req):
-    if "token" not in req:
-        return -1
-    
+def valid(token: str):
     cursor.execute(f"""
     SELECT * FROM tokens WHERE token = ?
-    """, [req["token"]])    
+    """, [token])    
     
     content = cursor.fetchone()
     if content == None:
-        return "Token not exists"
+        return False
 
-    if datetime.now().timestamp() > content[3]:
-        return "Token expired"
+    return datetime.now().timestamp() <= content[3]
 
-    return 0
+def get_from(request): return request["token"]
 
 def get_token(username):
     cursor.execute(f"""
@@ -41,7 +37,7 @@ def get_token(username):
     content = cursor.fetchone()
 
     if content == None:
-        return register(username)
+        return register_user(username)
 
 
     if datetime.now().timestamp() > content[3]:
@@ -49,7 +45,7 @@ def get_token(username):
         DELETE * FROM tokens WHERE token = ?
         """, [content[2]])
         connection.commit()
-        return register(username)
+        return register_user(username)
 
     renew_token(username)
     return content[2]
@@ -70,7 +66,7 @@ def renew_token(username):
     content = cursor.fetchone()
 
     if content == None:
-        return register(username)
+        return register_user(username)
     
     expiration = datetime.now() + timedelta(hours=12)
 
