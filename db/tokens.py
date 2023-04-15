@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 cursor = connection.cursor()
 
-def register_user(username):
+def register(username):
     rand_token = str(uuid4())
     expiration = datetime.now() + timedelta(hours=12)
 

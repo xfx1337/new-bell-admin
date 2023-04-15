@@ -59,3 +59,14 @@ def create_database():
     """)
 
     connection.commit()
+
+    cursor.execute(f"""
+    CREATE TABLE IF NOT EXISTS admin_events (
+        id INTEGER,
+        payload TEXT,
+        PRIMARY KEY(id AUTOINCREMENT)
+    )
+    """)
+
+    connection.commit()
+

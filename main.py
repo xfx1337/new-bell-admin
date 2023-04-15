@@ -3,15 +3,14 @@ import json
 import db.connection
 
 from user import User
-import db.users as users
-import db.tokens as tokens
-from services.register import register_user
-from services.register import register_device
-from services.login import login as login_service
-from services.refresh import refresh as refresh_service
-from services.register import approve_device as approve
-from services.info import unverified_devices as unverified_devices
-from services.info import devices as alldevices
+import db.users
+import db.tokens
+import db.admin_events
+
+import services.auth
+import services.communication
+import services.info
+
 from flask import Flask, jsonify, request
 
 app = Flask(__name__)
@@ -22,29 +21,40 @@ def main_page():
 
 @app.route('/api/users/register', methods = ['POST'])
 def user_register():
-    return register_user(request)
-
-@app.route('/api/devices/register', methods = ['POST'])
-def device_register():
-    return register_device(request)
-
-@app.route('/api/admin/approve', methods = ['POST'])
-def approve_device():
-    data = request.get_json()
-
-    return approve(request) if tokens.valid(tokens.get_from(data)) else ('Permission denied', 403) 
-
-@app.route('/api/admin/devices', methods = ['GET'])
-def devices():
-
     if not tokens.valid(request.args.get('token')): 
-        return 'Permission denied', 403
-    
-    return unverified_devices(request) if request.args.get('unverified') in ('true', '') else alldevices(request)
+            return 'Permission denied', 403
+    return services.auth.register_user(request)
 
 @app.route('/api/login', methods = ['POST'])
 def login():
-    return login_service(request)
+    return services.auth.login_user(request)
+
+
+@app.route('/api/devices/register', methods = ['POST'])
+def device_register():
+    return services.auth.register_device(request)
+
+@app.route('/api/admin/approve', methods = ['POST'])
+def approve_device():
+    if not db.tokens.valid(request.args.get('token')): 
+            return 'Permission denied', 403
+    return services.auth.approve_device(request)
+
+
+@app.route('/api/admin/get_events', methods = ['POST'])
+def get_events():
+    if not db.tokens.valid(request.args.get('token')): 
+        return 'Permission denied', 403
+
+    return db.admin_events.get_events_json()
+
+
+@app.route('/api/admin/devices', methods = ['GET'])
+def devices():
+    if not db.tokens.valid(request.args.get('token')): 
+        return 'Permission denied', 403
+    
+    return services.info.get_unverified_devices(request) if request.args.get('unverified') in ('true', '') else services.info.get_devices(request)
 
 @app.route('/api/stat')
 def stat():
@@ -52,7 +62,7 @@ def stat():
 
 @app.route('/api/refresh', methods = ['POST'])
 def refresh():
-    return refresh_service(request)
+    return services.communication.refresh(request)
 
 if __name__ == '__main__':
     

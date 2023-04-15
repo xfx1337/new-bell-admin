@@ -7,6 +7,25 @@ import db.tokens as tokens
 
 cursor = connection.cursor()
 
+
+def add_unverified(host, password):
+    cursor.execute(f"""
+    INSERT INTO devices (host, password) VALUES (?, ?)
+    """, [host, password])
+    db_id = cursor.lastrowid
+    connection.commit()
+
+    return db_id
+
+def register(device):
+
+    cursor.execute(f"""
+    UPDATE devices SET name = ?, region = ? WHERE id = ?
+    """, [device.name, device.region, device.id])
+    connection.commit()
+
+    return 0
+
 def refresh(data):
     username = tokens.get_username(data['token'])
     data = data['user']
@@ -18,18 +37,6 @@ def refresh(data):
     WHERE name=?""", [datetime.strftime(datetime.now(), '%d.%M.%Y %H:%M'), data['region'], username])
 
     connection.commit()
-
-def add_unverified(name: str = None, host: str = None, password: str = None, lastseen: str = None, region: str = None):
-    cursor.execute(f"""
-    INSERT INTO devices (name, host, password, lastseen, region, verified) VALUES (?, ?, ?, ?, ?, ?)
-    """, [name, host, password, lastseen, region, False])
-
-    connection.commit()
-
-    cursor.execute(f"""SELECT ID FROM devices WHERE host=?""", [host])
-    connection.commit()
-
-    return len(cursor.fetchall())
 
 def all():
     cursor.execute("SELECT * FROM devices")
