@@ -11,13 +11,24 @@ import services.auth
 import services.communication
 import services.info
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 
 app = Flask(__name__)
 
 @app.route('/')
 def main_page():
-    return "Nothing here"
+    return '''<div>start</div>
+    <script>
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api/statistics', true);
+        xhr.onreadystatechange = function(e) {
+            var div = document.createElement('div');
+            div.innerHTML = '' + this.readyState + ':' + this.responseText;
+            document.body.appendChild(div);
+        };
+        xhr.send();
+    </script>
+    '''
 
 @app.route('/api/users/register', methods = ['POST'])
 def user_register():
@@ -61,9 +72,11 @@ def devices():
     
     return services.info.get_unverified_devices(request) if request.args.get('unverified') in ('true', '') else services.info.get_devices(request)
 
-@app.route('/api/stat')
-def stat():
-    pass
+@app.route('/api/statistics', methods = ['GET', 'POST'])
+def statistics():
+    #if not db.tokens.valid(request.args.get('token')): 
+    #    return 'Permission denied', 403
+    return Response(services.info.statistics_stream(request), mimetype="plain/text")
 
 @app.route('/api/devices/wait_for_registration', methods = ['POST'])
 def wait():
@@ -72,6 +85,10 @@ def wait():
 @app.route('/api/refresh', methods = ['POST'])
 def refresh():
     return services.communication.refresh(request)
+
+@app.route('/api/devices/request', methods=['POST'])
+def testrequest():
+    return db.devices.request(request)
 
 if __name__ == '__main__':
     

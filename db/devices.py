@@ -1,5 +1,6 @@
 import sqlite3
 from db.connection import connection
+from streaming.stream import Stream
 
 import user
 from datetime import datetime
@@ -75,3 +76,14 @@ def verify(id: int):
     connection.commit()
 
     return len(cursor.fetchall())
+
+def get_full_info():
+    cursor.execute(f"""
+    SELECT * FROM devices
+    """)
+    return cursor.fetchall()
+
+def request(request):
+    stream = Stream()
+    stream.add(request.get_json())
+    return "Added", 200

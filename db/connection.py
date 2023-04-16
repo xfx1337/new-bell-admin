@@ -41,6 +41,8 @@ def create_database():
         host TEXT,
         password TEXT,
         lastseen TEXT,
+        lastlogs TEXT,
+        lastupdate timestamp,
         region TEXT,
         PRIMARY KEY(id AUTOINCREMENT)
     )
