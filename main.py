@@ -21,7 +21,7 @@ def main_page():
 
 @app.route('/api/users/register', methods = ['POST'])
 def user_register():
-    if not tokens.valid(request.args.get('token')): 
+    if not db.tokens.valid(request.args.get('token')): 
             return 'Permission denied', 403
     return services.auth.register_user(request)
 
@@ -29,6 +29,11 @@ def user_register():
 def login():
     return services.auth.login_user(request)
 
+@app.route('/api/users/delete', methods = ['POST'])
+def user_delete():
+    if not db.tokens.valid(request.args.get('token')):
+          return 'Peermission denied', 403
+    return services.auth.delete_user(request)
 
 @app.route('/api/devices/register', methods = ['POST'])
 def device_register():
@@ -60,6 +65,10 @@ def devices():
 def stat():
     pass
 
+@app.route('/api/devices/wait_for_registration', methods = ['POST'])
+def wait():
+    return services.communication.device_wait_for_registration(request)
+
 @app.route('/api/refresh', methods = ['POST'])
 def refresh():
     return services.communication.refresh(request)
@@ -70,4 +79,4 @@ if __name__ == '__main__':
         print("[DB] No database found.")
         db.connection.create_database()
 
-    app.run()
+    app.run(threaded=True)

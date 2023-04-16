@@ -9,25 +9,46 @@ import json
 
 
 def register_user(request):
-    if request.method == "POST":
-        data = request.get_json()
-        
-        if "user" not in data:
-            return "Invalid request", 400
-        
-        user = User()
-        ret = user.init_by_json(data["user"])
-        if ret != 0:
-            return "Invalid user creditionals", 400
-        
-        ret = db.users.register(user)
-        if ret != 0:
-            return "User is already exists", 400
-        ret = db.tokens.register(user.username)
-        ret = {"token": ret}
-        return json.dumps(ret, indent=4), 200
-    else:
+    data = request.get_json()
+    
+    if "user" not in data:
         return "Invalid request", 400
+    
+    if db.users.get_privileges(db.tokens.get_username(request.args.get('token'))) != 'owner':
+        return "Permission denied", 403
+
+    user = User()
+    ret = user.init_by_json(data["user"])
+    if ret != 0:
+        return "Invalid user creditionals", 400
+    
+    ret = db.users.register(user)
+    if ret != 0:
+        return "User is already exists", 400
+    ret = db.tokens.register(user.username)
+    ret = {"token": ret}
+    return json.dumps(ret, indent=4), 200
+
+def delete_user(request):
+    data = request.get_json()
+
+    if "username" not in data:
+        return "No username provided"
+    
+
+    ret, priv = db.users.get_privileges(db.tokens.get_username(request.args.get('token')))
+    if ret != 0:
+        return "Wrong request", 400
+    if priv != "owner":
+        return "Permission denied", 403
+
+    ret, message = db.users.delete_user(data["username"])
+    if ret != 0:
+        return ret, 400
+    else:
+        return "User deleted", 200
+
+
 
 def login_user(request):
     data = request.get_json()
@@ -65,6 +86,6 @@ def approve_device(request):
         return "Internal server error", 500
     
 
-    ret = db.tokens.register(device.id)
-    ret = {"token": ret}
-    return json.dumps(ret, indent=4), 200
+    ret = db.tokens.get_token(device.id)
+    ret = db.devices.verify(device.id)
+    return "Device added", 200

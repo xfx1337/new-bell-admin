@@ -2,7 +2,7 @@ import sqlite3
 from db.connection import connection
 from datetime import datetime
 import user
-import db.tokens as tokens
+import db.tokens
 
 cursor = connection.cursor()
 
@@ -18,11 +18,6 @@ def register(user: user):
     cursor.execute(f"""
     INSERT INTO users (username, password, privileges) VALUES (?, ?, ?)
     """, [user.username, user.password, user.privileges])
-    connection.commit()
-
-    cursor.execute(f"""
-    INSERT INTO devices (username, password, lastseen) VALUES(?, ?, ?)
-    """, [user.username, user.password, datetime.strftime(datetime.now(), '%d.%M.%Y %H:%M')])
     connection.commit()
 
     return 0
@@ -46,4 +41,36 @@ def login(data):
     if content[2] != data["password"]:
         return "Wrong password", 0
     
-    return 0, tokens.get_token(data["username"])
+    return 0, db.tokens.get_token(data["username"])
+
+def delete_user(username):
+    cursor.execute(f"""
+    SELECT * FROM users WHERE username = ?
+    """, [username])
+
+    content = cursor.fetchone()
+    
+    if content == None:
+        return "No such user", 0
+
+    cursor.execute(f"""
+    DELETE FROM users WHERE username = ?
+    """, [username])
+    connection.commit()
+
+    ret, message = db.tokens.remove_token(username)
+    return 0, 200
+
+
+
+def get_privileges(username):
+    cursor.execute(f"""
+    SELECT * FROM users where username = ?
+    """, [username])
+
+    content = cursor.fetchone()
+
+    if content == None:
+        return "No user with username", 0
+    
+    return 0, content[3]

@@ -37,18 +37,35 @@ def get_token(username):
     content = cursor.fetchone()
 
     if content == None:
-        return register_user(username)
+        return register(username)
 
 
     if datetime.now().timestamp() > content[3]:
-        cursor.execute(f""""
-        DELETE * FROM tokens WHERE token = ?
+        cursor.execute(f"""
+        DELETE FROM tokens WHERE token = ?
         """, [content[2]])
         connection.commit()
-        return register_user(username)
+        return register(username)
 
     renew_token(username)
     return content[2]
+
+def remove_token(username):
+    cursor.execute(f"""
+    SELECT * FROM tokens WHERE username = ?
+    """, [username])
+    content = cursor.fetchone()
+
+    if content == None:
+        return 0, "Token removed"
+
+    cursor.execute(f"""
+    DELETE FROM tokens WHERE token = ?
+    """, [content[2]])
+    connection.commit()
+
+    return 0, "Token removed"
+
 
 def get_username(token):
     cursor.execute(f"""
@@ -66,7 +83,7 @@ def renew_token(username):
     content = cursor.fetchone()
 
     if content == None:
-        return register_user(username)
+        return register(username)
     
     expiration = datetime.now() + timedelta(hours=12)
 

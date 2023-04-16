@@ -7,11 +7,29 @@ import db.tokens as tokens
 
 cursor = connection.cursor()
 
+def get_info(db_id):
+    cursor.execute(f"""
+    SELECT * FROM devices WHERE id = ?
+    """, [db_id])
+    content = cursor.fetchone()
+    
+    if content == None:
+        return "Device not found", 0
+
+    return 0, content
+
+def get_info_json(db_id):
+    ret, data = get_info(db_id)
+    if ret != 0:
+        return ret, data
+    
+    ret = {"verified": data[1], "name": data[2], "host": data[6]}
+    return 0, ret
 
 def add_unverified(host, password):
     cursor.execute(f"""
-    INSERT INTO devices (host, password) VALUES (?, ?)
-    """, [host, password])
+    INSERT INTO devices (verified, host, password) VALUES (?, ?, ?)
+    """, [0, host, password])
     db_id = cursor.lastrowid
     connection.commit()
 
