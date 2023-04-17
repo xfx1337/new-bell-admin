@@ -17,7 +17,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def main_page():
-    return '''<div>start</div>
+    return '''<div>statistics</div>
     <script>
         var xhr = new XMLHttpRequest();
         xhr.open('GET', '/api/statistics', true);

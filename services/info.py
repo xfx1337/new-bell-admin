@@ -38,14 +38,15 @@ def statistics_stream(req):
 
     stream = Stream()
     stream.reinit()
-
+    i = 0
     while stream.exit != True:
-        if len(stream.queue) == 0:
-            continue
-        
-        readed = len(stream.queue)
-        yield handle_stream_data(stream.queue.copy(), readed)
-        stream.read(readed)
+        #if len(stream.queue) == 0:
+        #    continue
+        yield str(i)
+        i += 1
+        #readed = len(stream.queue)
+        #yield handle_stream_data(stream.queue.copy(), readed)
+        #stream.read(readed)
 
     stream.stop()
     yield "[StreamEnd]"
