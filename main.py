@@ -15,6 +15,9 @@ import services.info
 
 
 from flask import Flask, jsonify, request, Response
+from flask_cors import CORS
+
+
 
 app = Flask(__name__)
 
@@ -90,6 +93,7 @@ def statistics_view():
             
             var div = document.createElement('div');
             div.innerHTML = s;
+            console.log(s)
             document.body.appendChild(div);
 
         }};
@@ -121,3 +125,4 @@ if __name__ == '__main__':
         db.connection.create_database()
 
     app.run(threaded=True)
+    CORS(app)

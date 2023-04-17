@@ -1,11 +1,12 @@
 import sqlite3
-from db.connection import connection
+
 from streaming.stream import Stream
 
 import user
 from datetime import datetime
 import db.tokens as tokens
 
+connection = sqlite3.connect('database.db', check_same_thread=False)
 cursor = connection.cursor()
 
 def get_info(db_id):

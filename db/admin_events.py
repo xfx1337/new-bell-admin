@@ -1,9 +1,10 @@
 import sqlite3
-from db.connection import connection
 from datetime import datetime
 import json
 
+connection = sqlite3.connect('database.db', check_same_thread=False)
 cursor = connection.cursor()
+
 
 def add(evt):
     cursor.execute(f"""

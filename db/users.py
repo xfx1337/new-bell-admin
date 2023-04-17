@@ -1,9 +1,9 @@
 import sqlite3
-from db.connection import connection
 from datetime import datetime
 import user
 import db.tokens
 
+connection = sqlite3.connect('database.db', check_same_thread=False)
 cursor = connection.cursor()
 
 def register(user: user):

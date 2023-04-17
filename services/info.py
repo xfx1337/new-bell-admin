@@ -25,21 +25,33 @@ def statistics_stream(req, breaktime):
         yield json.dumps(ret, indent=4)
 
     stream = Stream()
-    stream.reinit()
+    stream.connect()
+
     yield "\n[StreamStart]"
+    
+    readids = [] # already read ids
 
     while stream.exit != True:
-        if len(stream.queue) == 0:
+        if len(stream.queue.keys()) == 0:
            continue
-        readed = len(stream.queue)
-        yield handle_stream_data(stream.queue.copy(), readed)
-        stream.read(readed)
+        readed = stream.queue.copy()
+        ret, ids = handle_stream_data(readed, readids)
+        if ret != 0:
+            stream.read(ids)
+            yield ret
 
-    stream.stop()
     yield "\n[StreamEnd]"
+    stream.disconnect()
 
-def handle_stream_data(queue, readed):
+def handle_stream_data(queue, readids):
     data = {"data": []}
-    for i in range(readed):
-        data["data"].append({"id": queue[i][0], "query": queue[i][1]})
-    return f"\n[ResponseStart]" + json.dumps(data, indent=4) + "[ReponseEnd]"
+    ids = []
+    for i in queue.keys():
+        if i in readids:
+            continue
+        data["data"].append({"id": i, "content": queue[i]})
+        ids.append(i)
+        readids.append(i)
+    if len(data["data"]) == 0:
+        return 0, 0
+    return f"\n[ResponseStart]" + json.dumps(data, indent=4) + "[ReponseEnd]", ids

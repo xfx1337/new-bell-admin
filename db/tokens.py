@@ -1,10 +1,12 @@
 import sqlite3
-from db.connection import connection
 
 from uuid import uuid4
 from datetime import datetime, timedelta
 
+connection = sqlite3.connect('database.db', check_same_thread=False)
 cursor = connection.cursor()
+
+
 
 def register(username):
     rand_token = str(uuid4())
