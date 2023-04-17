@@ -1,5 +1,7 @@
 import os
 import json
+from datetime import datetime, timedelta
+
 import db.connection
 
 from user import User
@@ -11,24 +13,10 @@ import services.auth
 import services.communication
 import services.info
 
+
 from flask import Flask, jsonify, request, Response
 
 app = Flask(__name__)
-
-@app.route('/')
-def main_page():
-    return '''<div>statistics</div>
-    <script>
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/api/statistics', true);
-        xhr.onreadystatechange = function(e) {
-            var div = document.createElement('div');
-            div.innerHTML = '' + this.readyState + ':' + this.responseText;
-            document.body.appendChild(div);
-        };
-        xhr.send();
-    </script>
-    '''
 
 @app.route('/api/users/register', methods = ['POST'])
 def user_register():
@@ -72,12 +60,6 @@ def devices():
     
     return services.info.get_unverified_devices(request) if request.args.get('unverified') in ('true', '') else services.info.get_devices(request)
 
-@app.route('/api/statistics', methods = ['GET', 'POST'])
-def statistics():
-    #if not db.tokens.valid(request.args.get('token')): 
-    #    return 'Permission denied', 403
-    return Response(services.info.statistics_stream(request), mimetype="plain/text")
-
 @app.route('/api/devices/wait_for_registration', methods = ['POST'])
 def wait():
     return services.communication.device_wait_for_registration(request)
@@ -89,6 +71,48 @@ def refresh():
 @app.route('/api/devices/request', methods=['POST'])
 def testrequest():
     return db.devices.request(request)
+
+@app.route('/api/admin/statistics_view', methods=['GET'])
+def statistics_view():
+    if not db.tokens.valid(request.args.get('token')): 
+        return 'Permission denied', 403
+    
+    return f'''<div>statistics</div>
+    <script>
+        var last_index = 0;
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/admin/statistics?token={request.args.get('token')}");
+        xhr.onprogress = function () {{
+            var curr_index = xhr.responseText.length;
+            if (last_index == curr_index) return; 
+            var s = xhr.responseText.substring(last_index, curr_index);
+            last_index = curr_index;
+            
+            var div = document.createElement('div');
+            div.innerHTML = s;
+            document.body.appendChild(div);
+
+        }};
+        xhr.send();
+    </script>
+    ''', request.args.get('token')
+
+@app.route('/api/admin/statistics', methods = ['POST'])
+def statistics():
+    if not db.tokens.valid(request.args.get('token')): 
+        return 'Permission denied', 403
+    
+    breaktime = datetime.now() + timedelta(minutes=5)
+
+    if request.data:
+        data = request.get_json()
+        if "breaktime" not in data:
+            breaktime = datetime.now() + timedelta(minutes=5)
+        else:
+            breaktime = datetime.now() + data["breaktime"]
+
+    return Response(services.info.statistics_stream(request, breaktime), mimetype="text/event-stream")
+
 
 if __name__ == '__main__':
     
