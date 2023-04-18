@@ -14,7 +14,9 @@ def register_user(request):
     if "user" not in data:
         return "Invalid request", 400
     
-    if db.users.get_privileges(db.tokens.get_username(request.args.get('token'))) != 'owner':
+    print(db.users.get_privileges(db.tokens.get_username(request.headers.get('Authorization'))))
+
+    if db.users.get_privileges(db.tokens.get_username(request.headers.get('Authorization'))) != 'owner':
         return "Permission denied", 403
 
     user = User()
@@ -36,7 +38,7 @@ def delete_user(request):
         return "No username provided"
     
 
-    ret, priv = db.users.get_privileges(db.tokens.get_username(request.args.get('token')))
+    ret, priv = db.users.get_privileges(db.tokens.get_username(request.headers.get('Authorization')))
     if ret != 0:
         return "Wrong request", 400
     if priv != "owner":
@@ -52,9 +54,19 @@ def delete_user(request):
 
 def login_user(request):
     data = request.get_json()
-    ret, token = db.users.login(data)
-    if ret == -1:
-        return "Invalid user creditionals", 400
+
+    if "username" not in data and "device_id" not in data:
+        return 0, "Invalid request"
+    if "password" not in data:
+        return 0, "Invalid request"
+    
+    if "username" in data:
+        ret, token = db.users.login(data)
+    else:
+        ret, token = db.devices.login(data)
+
+    if ret != 0:
+        return token, 400
     ret = {"token": token}
     return json.dumps(ret, indent=4), 200
 

@@ -3,8 +3,7 @@ import db.tokens
 import db.users
 import db.devices
 
-from streaming.stream import Stream
-from streaming.stream_connection import stream
+from streaming.stat_stream import StatStream
 
 import json
 from datetime import datetime, timedelta
@@ -15,17 +14,17 @@ def get_unverified_devices(req):
 def get_devices(req):
     return json.dumps(db.devices.all()), 200
 
-def statistics_stream(req, breaktime):
+def statistics_stream(req, token, breaktime):
     # eliminating best practices...
     
     info = db.devices.get_full_info()
     ret = {"devices": []}
     for device in info:
         ret["devices"].append({"id": device[0], "verified": device[1], "name": device[2], "host": device[3], "lastseen": device[5], "lastlogs": device[6], "lastupdate": device[7], "region": device[8]})
-        yield json.dumps(ret, indent=4)
+    yield json.dumps(ret, indent=4)
 
-    stream = Stream()
-    stream.connect()
+    stream = StatStream()
+    stream.connect(token)
 
     yield "\n[StreamStart]"
     
@@ -37,11 +36,11 @@ def statistics_stream(req, breaktime):
         readed = stream.queue.copy()
         ret, ids = handle_stream_data(readed, readids)
         if ret != 0:
-            stream.read(ids)
+            stream.read(token, ids)
             yield ret
 
     yield "\n[StreamEnd]"
-    stream.disconnect()
+    stream.disconnect(token)
 
 def handle_stream_data(queue, readids):
     data = {"data": []}
@@ -49,7 +48,7 @@ def handle_stream_data(queue, readids):
     for i in queue.keys():
         if i in readids:
             continue
-        data["data"].append({"id": i, "content": queue[i]})
+        data["data"].append({"id": i, "content": queue[i]["data"]})
         ids.append(i)
         readids.append(i)
     if len(data["data"]) == 0:
