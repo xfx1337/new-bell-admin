@@ -26,10 +26,6 @@ def register(user: user):
         return 0
 
 def login(data):
-    if "username" not in data and "device_id" not in data:
-        return 0, "Invalid request"
-    if "password" not in data:
-        return 0, "Invalid request"
     with lock:
         cursor.execute(f"""
         SELECT * FROM users WHERE username = ?
@@ -38,12 +34,12 @@ def login(data):
         content = cursor.fetchone()
         connection.commit()
         
-        if content == None:
-            return -1, "No user with username", 
-            
-        if content[2] != data["password"]:
-            return -1, "Wrong password"
-        return 0, db.tokens.get_token(data["username"])
+    if content == None:
+        return -1, "No user with username", 
+        
+    if content[2] != data["password"]:
+        return -1, "Wrong password"
+    return 0, db.tokens.get_token(data["username"])
 
 def delete_user(username):
     with lock:
@@ -60,8 +56,8 @@ def delete_user(username):
         """, [username])
         connection.commit()
 
-        ret, message = db.tokens.remove_token(username)
-        return 0, 200
+    ret, message = db.tokens.remove_token(username)
+    return 0, 200
 
 
 

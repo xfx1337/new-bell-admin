@@ -54,12 +54,10 @@ def delete_user(request):
 
 def login_user(request):
     data = request.get_json()
-
     if "username" not in data and "device_id" not in data:
         return 0, "Invalid request"
     if "password" not in data:
         return 0, "Invalid request"
-    
     if "username" in data:
         ret, token = db.users.login(data)
     else:

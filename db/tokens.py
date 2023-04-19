@@ -48,18 +48,19 @@ def get_token(username):
         """, [username])
         content = cursor.fetchone()
 
-        if content == None:
-            return register(username)
+    if content == None:
+        return register(username)
 
-        if datetime.now().timestamp() > content[3]:
+    if datetime.now().timestamp() > content[3]:
+        with lock:
             cursor.execute(f"""
             DELETE FROM tokens WHERE token = ?
             """, [content[2]])
             connection.commit()
-            return register(username)
+        return register(username)
 
-        renew_token(username)
-        return content[2]
+    renew_token(username)
+    return content[2]
 
 def remove_token(username):
     with lock:
@@ -97,11 +98,12 @@ def renew_token(username):
         """, [username])
         content = cursor.fetchone()
 
-        if content == None:
-            return register(username)
+    if content == None:
+        return register(username)
         
-        expiration = datetime.now() + timedelta(hours=12)
+    expiration = datetime.now() + timedelta(hours=12)
 
+    with lock:
         cursor.execute(f"""
         UPDATE tokens SET expiration = ? WHERE username = ?
         """, [int(round(expiration.timestamp())), username])
