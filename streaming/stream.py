@@ -1,5 +1,6 @@
 import threading
 import time
+import db.devices
 
 class Stream:
     def __init__(self):
@@ -29,10 +30,8 @@ class Stream:
                     if unique not in self.queue[ids[i]]["viewed"]:
                         self.queue[ids[i]]["viewed"].append(unique)
                     if len(self.queue[ids[i]]["viewed"]) >= len(self.listeners.keys()):
-                        try:
-                            del self.queue[ids[i]]
-                        except:
-                            pass
+                        try: del self.queue[ids[i]]
+                        except: pass
             return self.exit
     
     def close(self):

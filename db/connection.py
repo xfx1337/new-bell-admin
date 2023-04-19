@@ -1,3 +1,5 @@
+valid_device_keys = ["host", "password", "lastupdate", "last_logs", "cpu_temp"]
+
 import sqlite3
 
 connection = sqlite3.connect('database.db', check_same_thread=False)
@@ -20,8 +22,6 @@ def create_database():
         username TEXT,
         password TEXT,
         privileges TEXT,
-        school TEXT,
-        cpu_temp TEXT,
         PRIMARY KEY(id AUTOINCREMENT)
     ) 
     """)
@@ -33,6 +33,7 @@ def create_database():
     """, ["newbell", "Zvonki2023", "owner"])
     connection.commit()
 
+    # dont forget to change valid_device_keys upper
     cursor.execute(f""" 
     CREATE TABLE IF NOT EXISTS devices (
         id INTEGER,
@@ -42,8 +43,9 @@ def create_database():
         password TEXT,
         lastseen TEXT,
         lastlogs TEXT,
-        lastupdate timestamp,
+        lastupdate TEXT,
         region TEXT,
+        cpu_temp TEXT,
         PRIMARY KEY(id AUTOINCREMENT)
     )
     """)

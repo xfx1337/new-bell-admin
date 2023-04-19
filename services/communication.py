@@ -13,8 +13,10 @@ def refresh(req, token):
 
     data = req.get_json()
     username = db.tokens.get_username(token)
+    data["id"] = username
     stat_stream = StatStream()
     stat_stream.add(data)
+    db.devices.handle_info_update(data)
 
     stream = ExecStream(db.devices.get_box_count_verified)
     stream.connect(username)

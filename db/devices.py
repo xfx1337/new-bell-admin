@@ -8,6 +8,8 @@ import user
 from datetime import datetime
 import db.tokens
 
+from db.connection import valid_device_keys
+
 connection = sqlite3.connect('database.db', check_same_thread=False)
 cursor = connection.cursor()
 
@@ -120,3 +122,25 @@ def request(request):
     stream = ExecStream(get_box_count_verified)
     stream.add(request.get_json())
     return "Added", 200
+
+def handle_info_update(data):
+    valid_keys = []
+    if "id" not in data:
+        return -1
+
+    for key in data.keys():
+        if key in valid_device_keys:
+            valid_keys.append(key)
+    
+    sql = "UPDATE devices SET "
+    for key in valid_keys:
+        sql = sql + key + "=\"" + str(data[key]) + "\", "
+    sql = sql[:-2]
+    sql = sql + " WHERE id=" + data["id"]
+    print(sql)
+    with lock:
+        try:
+            cursor.execute(sql)
+            connection.commit()
+        except Exception as e:
+            print(e)
