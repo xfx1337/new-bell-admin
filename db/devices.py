@@ -53,6 +53,7 @@ def register(device):
         return 0
 
 def login(data):
+    content = None
     with lock:
         cursor.execute(f"""
             SELECT * FROM devices WHERE id = ?
@@ -61,12 +62,12 @@ def login(data):
         content = cursor.fetchone()
         connection.commit()
         
-        if content == None:
-            return -1, "No device with this id"
-        
-        if content[4] != data["password"]:
-            return -1, "Wrong password"
-        return 0, db.tokens.get_token(data["device_id"])
+    if content == None:
+        return -1, "No device with this id"
+    
+    if content[4] != data["password"]:
+        return -1, "Wrong password"
+    return 0, db.tokens.get_token(data["device_id"])
 
 def refresh(data):
     username = db.tokens.get_username(data['token'])

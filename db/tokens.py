@@ -42,6 +42,7 @@ def valid_bearer(token: str):
 def get_from(request): return request["token"]
 
 def get_token(username):
+    content = None
     with lock:
         cursor.execute(f"""
         SELECT * FROM tokens WHERE username = ?
@@ -92,6 +93,7 @@ def get_username(token):
         return cursor.fetchone()[0]
 
 def renew_token(username):
+    content = None
     with lock:
         cursor.execute(f"""
         SELECT token FROM tokens WHERE username = ?

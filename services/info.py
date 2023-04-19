@@ -23,8 +23,10 @@ def statistics_stream(req, token, breaktime):
         ret["devices"].append({"id": device[0], "verified": device[1], "name": device[2], "host": device[3], "lastseen": device[5], "lastlogs": device[6], "lastupdate": device[7], "region": device[8]})
     yield json.dumps(ret, indent=4)
 
+    username = db.tokens.get_username(token)
+
     stream = StatStream()
-    stream.connect(token)
+    stream.connect(username)
 
     yield "\n[StreamStart]"
     
@@ -36,11 +38,11 @@ def statistics_stream(req, token, breaktime):
         readed = stream.queue.copy()
         ret, ids = handle_stream_data(readed, readids)
         if ret != 0:
-            stream.read(token, ids)
+            stream.read(username, ids)
             yield ret
 
     yield "\n[StreamEnd]"
-    stream.disconnect(token)
+    stream.disconnect(username)
 
 def handle_stream_data(queue, readids):
     data = {"data": []}

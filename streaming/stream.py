@@ -22,12 +22,12 @@ class Stream:
             self.id += 1
         return self.exit
 
-    def read(self, token, ids=[]):
+    def read(self, unique, ids=[]): # unique = token or username or id
         with self.lock:
             for i in range(len(ids)): # only like this!
                 if ids[i] in self.queue.keys():
-                    if token not in self.queue[ids[i]]["viewed"]:
-                        self.queue[ids[i]]["viewed"].append(token)
+                    if unique not in self.queue[ids[i]]["viewed"]:
+                        self.queue[ids[i]]["viewed"].append(unique)
                     if len(self.queue[ids[i]]["viewed"]) >= len(self.listeners.keys()):
                         try:
                             del self.queue[ids[i]]
@@ -41,12 +41,12 @@ class Stream:
     def get_stream(self):
         return self
     
-    def connect(self, token):
-        self.listeners[token] = 1
+    def connect(self, unique):
+        self.listeners[unique] = 1
 
-    def disconnect(self, token):
+    def disconnect(self, unique):
         try:
-            self.listeners.pop(token)
+            self.listeners.pop(unique)
         except:
             pass
     

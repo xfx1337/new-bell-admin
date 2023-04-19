@@ -26,6 +26,7 @@ def register(user: user):
         return 0
 
 def login(data):
+    content = None
     with lock:
         cursor.execute(f"""
         SELECT * FROM users WHERE username = ?

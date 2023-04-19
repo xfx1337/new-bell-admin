@@ -69,6 +69,7 @@ def wait():
 @app.route('/api/devices/refresh', methods = ['POST'])
 def refresh():
     if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
+        breakpoint()
         return 'Permission denied', 403
     return services.communication.refresh(request, request.headers.get("Authorization").split()[1])
 

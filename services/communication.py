@@ -12,12 +12,12 @@ def refresh(req, token):
     exit = False
 
     data = req.get_json()
-
+    username = db.tokens.get_username(token)
     stat_stream = StatStream()
     stat_stream.add(data)
 
     stream = ExecStream(db.devices.get_box_count_verified)
-    stream.connect(token)
+    stream.connect(username)
     readids = [] # already read ids
 
 
@@ -29,8 +29,8 @@ def refresh(req, token):
         readed = stream.queue.copy()
         ret, ids = handle_stream_data(readed, readids)
         if ret != 0:
-            stream.read(token, ids)
-            stream.disconnect(token)
+            stream.read(username, ids)
+            stream.disconnect(username)
             return ret, 200
 
     return 'Reconnect please', 200
@@ -41,7 +41,7 @@ def handle_stream_data(queue, readids):
     for i in queue.keys():
         if i in readids:
             continue
-        data["data"].append({"id": i, "content": queue[i]})
+        data["data"].append({"id": i, "content": queue[i]["data"]})
         ids.append(i)
         readids.append(i)
     if len(data["data"]) == 0:

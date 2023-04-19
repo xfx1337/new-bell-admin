@@ -11,13 +11,13 @@ class ExecStream(Stream):
         self.get_box_count_verified = get_box_count_verified
         self.box_count = get_box_count_verified()
 
-    def read(self, token, ids=[]):
+    def read(self, unique, ids=[]):
         self.box_count = self.get_box_count_verified()
         with self.lock:
             for i in range(len(ids)): # only like this!
                 if ids[i] in self.queue.keys():
-                    if token not in self.queue[ids[i]]["viewed"]:
-                        self.queue[ids[i]]["viewed"].append(token)
+                    if unique not in self.queue[ids[i]]["viewed"]:
+                        self.queue[ids[i]]["viewed"].append(unique)
                     if len(self.queue[ids[i]]["viewed"]) >= self.box_count:
                         try:
                             del self.queue[ids[i]]
