@@ -69,7 +69,6 @@ def wait():
 @app.route('/api/devices/refresh', methods = ['POST'])
 def refresh():
     if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
-        breakpoint()
         return 'Permission denied', 403
     return services.communication.refresh(request, request.headers.get("Authorization").split()[1])
 
@@ -134,5 +133,5 @@ if __name__ == '__main__':
         print("[DB] No database found.")
         db.connection.create_database()
 
-    app.run(threaded=True, debug=True)
+    app.run(threaded=True, debug=True, host="0.0.0.0")
     CORS(app)
