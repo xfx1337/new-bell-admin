@@ -50,16 +50,17 @@ class Stream:
             pass
     
     def _killer(self):
-        while self.close != True:
-            time.sleep(20)
-            with self.lock:
-                if len(self.queue.keys()) != 0:
-                    if self.id in self.queue.keys():
-                        if len(self.listeners.keys()) != len(self.queue[self.id]["viewed"]):
-                            for viewer in self.queue[self.id]["viewed"]:
-                                if viewer not in self.listeners.keys():
-                                    self.disconnect(viewer)
-                            for i in range(self.id-1):
-                                if self.id in self.queue.keys():
-                                    del self.queue[self.id]
+        pass # temprorary DISABLED
+        # while self.close != True:
+        #     time.sleep(20)
+        #     with self.lock:
+        #         if len(self.queue.keys()) != 0:
+        #             if self.id in self.queue.keys():
+        #                 if len(self.listeners.keys()) != len(self.queue[self.id]["viewed"]):
+        #                     for viewer in self.queue[self.id]["viewed"]:
+        #                         if viewer not in self.listeners.keys():
+        #                             self.disconnect(viewer)
+        #                     for i in range(self.id-1):
+        #                         if self.id in self.queue.keys():
+        #                             del self.queue[self.id]
             

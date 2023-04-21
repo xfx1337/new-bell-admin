@@ -120,8 +120,8 @@ def get_box_count_verified():
 
 def request(request):
     stream = ExecStream(get_box_count_verified)
-    stream.add(request.get_json())
-    return "Added", 200
+    id = stream.add(request.get_json())
+    return {"id": int(id)}, 200
 
 def handle_info_update(data):
     valid_keys = []
@@ -137,7 +137,6 @@ def handle_info_update(data):
         sql = sql + key + "=\"" + str(data[key]) + "\", "
     sql = sql[:-2]
     sql = sql + " WHERE id=" + str(data["id"])
-    print(sql)
     with lock:
         try:
             cursor.execute(sql)

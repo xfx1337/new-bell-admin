@@ -7,6 +7,30 @@ import time
 from streaming.exec_stream import ExecStream
 from streaming.stat_stream import StatStream
 
+def response(req, token):
+    
+    username = int(db.tokens.get_username(token))
+
+    data = req.get_json()
+
+    if "data" not in data:
+        return "Invalid request", 400
+
+    ids = []
+    responses = []
+
+    for res in data["data"]:
+        ids.append(int(res["id"]))
+        responses.append(res)
+
+    stream = ExecStream(db.devices.get_box_count_verified)
+    stream.read(username, ids)
+
+    stat_stream = StatStream()
+    stat_stream.add(responses)
+
+    return "Readed", 200
+
 def refresh(req, token):
     time_start = datetime.now()
     exit = False
@@ -17,6 +41,7 @@ def refresh(req, token):
     stat_stream = StatStream()
     stat_stream.add(data)
     db.devices.handle_info_update(data)
+
 
     stream = ExecStream(db.devices.get_box_count_verified)
     stream.connect(username)
@@ -31,7 +56,7 @@ def refresh(req, token):
         readed = stream.queue.copy()
         ret, ids = handle_stream_data(readed, readids, username)
         if ret != 0:
-            stream.read(username, ids)
+            #stream.read(username, ids)
             stream.disconnect(username)
             return ret, 200
 

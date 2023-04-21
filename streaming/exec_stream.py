@@ -14,12 +14,12 @@ class ExecStream(Stream):
     def add(self, data):
         self.id += 1
         if "ids" in data:
-            should_listen = data["ids"]
+            should_listen = data["ids"].copy()
             del data["ids"]
             self.queue[self.id] = {"data": data, "ids": should_listen}
         else:
             self.queue[self.id] = {"data": data, "viewed": []}
-        return self.exit
+        return self.id
 
     def read(self, unique, ids=[]):
         self.box_count = self.get_box_count_verified()
@@ -45,21 +45,22 @@ class ExecStream(Stream):
             return self.exit
     
     def _killer(self):
-        while self.close != True:
-            time.sleep(20)
-            self.box_count = self.get_box_count_verified()
-            with self.lock:
-                if len(self.queue.keys()) != 0:
-                    if self.id in self.queue.keys():
-                        if "viewed" in self.queue[self.id]:
-                            if self.box_count != len(self.queue[self.id]["viewed"]):
-                                for viewer in self.queue[self.id]["viewed"]:
-                                    if viewer not in self.listeners.keys():
-                                        self.disconnect(viewer)
-                                for i in range(self.id-1):
-                                    if i in self.queue.keys():
-                                        if "viewed" in self.queue[i]:
-                                            try: del self.queue[i]
-                                            except: pass
-                        else:
-                            pass
+        pass # temprorary DISABLED
+        # while self.close != True:
+        #     time.sleep(20)
+        #     self.box_count = self.get_box_count_verified()
+        #     with self.lock:
+        #         if len(self.queue.keys()) != 0:
+        #             if self.id in self.queue.keys():
+        #                 if "viewed" in self.queue[self.id]:
+        #                     if self.box_count != len(self.queue[self.id]["viewed"]):
+        #                         for viewer in self.queue[self.id]["viewed"]:
+        #                             if viewer not in self.listeners.keys():
+        #                                 self.disconnect(viewer)
+        #                         for i in range(self.id-1):
+        #                             if i in self.queue.keys():
+        #                                 if "viewed" in self.queue[i]:
+        #                                     try: del self.queue[i]
+        #                                     except: pass
+        #                 else:
+        #                     pass

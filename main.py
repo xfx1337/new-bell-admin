@@ -83,6 +83,12 @@ def admin_request():
     # {"type": "LOCK", "ids": [0, 2, 5]}
     # {"type": "UNLOCK", "ids": [0, 2, 5]}
 
+@app.route('/api/devices/response', methods=['POST'])
+def get_response():
+    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
+        return 'Permission denied', 403
+    return services.communication.response(request, request.headers.get("Authorization").split()[1])
+
 @app.route('/api/admin/statistics_view', methods=['GET'])
 def statistics_view():
     if not db.tokens.valid(request.args.get('token')): 
