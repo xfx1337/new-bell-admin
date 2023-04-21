@@ -136,7 +136,7 @@ def handle_info_update(data):
     for key in valid_keys:
         sql = sql + key + "=\"" + str(data[key]) + "\", "
     sql = sql[:-2]
-    sql = sql + " WHERE id=" + data["id"]
+    sql = sql + " WHERE id=" + str(data["id"])
     print(sql)
     with lock:
         try:

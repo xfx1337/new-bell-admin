@@ -12,7 +12,7 @@ def refresh(req, token):
     exit = False
 
     data = req.get_json()
-    username = db.tokens.get_username(token)
+    username = int(db.tokens.get_username(token))
     data["id"] = username
     stat_stream = StatStream()
     stat_stream.add(data)
@@ -29,7 +29,7 @@ def refresh(req, token):
         if len(stream.queue.keys()) == 0:
             continue
         readed = stream.queue.copy()
-        ret, ids = handle_stream_data(readed, readids)
+        ret, ids = handle_stream_data(readed, readids, username)
         if ret != 0:
             stream.read(username, ids)
             stream.disconnect(username)
@@ -37,12 +37,19 @@ def refresh(req, token):
 
     return 'Reconnect please', 200
 
-def handle_stream_data(queue, readids):
+def handle_stream_data(queue, readids, username):
     data = {"data": []}
     ids = []
     for i in queue.keys():
         if i in readids:
             continue
+        if "ids" in queue[i]:
+            if username not in queue[i]["ids"]:
+                continue
+        else:
+            if username in queue[i]["viewed"]:
+                continue
+                
         data["data"].append({"id": i, "content": queue[i]["data"]})
         ids.append(i)
         readids.append(i)
