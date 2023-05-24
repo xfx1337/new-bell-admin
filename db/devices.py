@@ -32,7 +32,7 @@ def get_info_json(db_id):
     if ret != 0:
         return ret, data
 
-    ret = {"verified": data[1], "name": data[2], "host": data[6], "token": db.tokens.register(db_id)}
+    ret = {"verified": data[1], "name": data[2], "host": data[6], "token": db.tokens.get_token(db_id)}
     return 0, ret
 
 def add_unverified(host, password):

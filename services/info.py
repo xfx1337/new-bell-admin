@@ -55,4 +55,4 @@ def handle_stream_data(queue, readids):
         readids.append(i)
     if len(data["data"]) == 0:
         return 0, 0
-    return f"\n[ResponseStart]" + json.dumps(data, indent=4) + "[ReponseEnd]", ids
+    return f"\n[ResponseStart]" + json.dumps(data, indent=4) + "[ResponseEnd]", ids
