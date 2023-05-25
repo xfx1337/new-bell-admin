@@ -53,7 +53,13 @@ def approve_device():
 def get_events():
     if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
         return 'Permission denied', 403
-    return db.admin_events.get_events_json()
+    return db.admin_events.get_events_json(db.tokens.get_username(request.headers.get("Authorization")))
+
+@app.route('/api/admin/read_events', methods = ['POST'])
+def read_events():
+    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
+        return 'Permission denied', 403
+    return services.info.read_events(request)
 
 
 @app.route('/api/admin/devices', methods = ['GET'])

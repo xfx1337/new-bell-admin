@@ -2,6 +2,7 @@ from user import User
 import db.tokens
 import db.users
 import db.devices
+import db.admin_events
 
 from streaming.stat_stream import StatStream
 
@@ -56,3 +57,15 @@ def handle_stream_data(queue, readids):
     if len(data["data"]) == 0:
         return 0, 0
     return f"\n[ResponseStart]" + json.dumps(data, indent=4) + "[ResponseEnd]", ids
+
+def read_events(req):
+    data = req.get_json()
+    username = db.tokens.get_username(req.headers.get("Authorization"))
+    if "ids" not in data:
+        return "Bad request", 400
+    ids = data["ids"]
+    for id in ids:
+        ret = db.admin_events.read(id, username)
+        if ret != 0:
+            return "Not found", 404
+    return "Read", 200
