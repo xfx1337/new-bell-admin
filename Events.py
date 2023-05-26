@@ -14,4 +14,4 @@ class DeviceRegisterEvent(Event):
         super().__init__(time)
         self.type = "DeviceRegisterEvent"
         self.host = host
-        self.id = id
+        self.device_id = id

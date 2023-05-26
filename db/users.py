@@ -71,6 +71,6 @@ def get_privileges(username):
         content = cursor.fetchone()
 
         if content == None:
-            return "No user with username", 0
+            return -1, "No user with username",
         
-        return content[3]
+        return 0, content[3]

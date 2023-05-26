@@ -61,11 +61,26 @@ def read_events():
         return 'Permission denied', 403
     return services.info.read_events(request)
 
-
-@app.route('/api/admin/devices', methods = ['GET'])
-def devices():
-    if not db.tokens.valid(request.args.get('token')): 
+@app.route('/api/users/info', methods = ['POST'])
+def user_info():
+    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
         return 'Permission denied', 403
+    return services.info.get_user_info(request)
+
+@app.route('/api/devices/info', methods = ['POST'])
+def get_device_info():
+    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
+        return 'Permission denied', 403
+    return services.info.get_device_info_json(request)
+
+@app.route('/api/admin/devices', methods = ['GET', 'POST'])
+def devices():
+    if request.method == 'GET':
+        if not db.tokens.valid(request.args.get('token')): 
+            return 'Permission denied', 403
+    elif request.method == 'POST':
+        if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
+            return 'Permission denied', 403
     return services.info.get_unverified_devices(request) if request.args.get('unverified') in ('true', '') else services.info.get_devices(request)
 
 @app.route('/api/devices/wait_for_registration', methods = ['POST'])

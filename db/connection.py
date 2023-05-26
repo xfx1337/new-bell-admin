@@ -1,6 +1,7 @@
-valid_device_keys = ["host", "password", "lastupdate", "last_logs", "cpu_temp"]
+valid_device_keys = ["host", "password", "lastupdate", "last_logs", "cpu_temp", "institution"]
 
 import sqlite3
+import hashlib
 
 connection = sqlite3.connect('database.db', check_same_thread=False)
 cursor = connection.cursor()
@@ -30,7 +31,7 @@ def create_database():
 
     cursor.execute(f"""
     INSERT INTO users (username, password, privileges) VALUES (?, ?, ?)
-    """, ["newbell", "Zvonki2023", "owner"])
+    """, ["newbell", hashlib.md5("Zvonki2023".encode("utf-8")).hexdigest(), "owner"])
     connection.commit()
 
     # dont forget to change valid_device_keys upper
@@ -45,6 +46,7 @@ def create_database():
         lastlogs TEXT,
         lastupdate TEXT,
         region TEXT,
+        institution TEXT,
         cpu_temp TEXT,
         PRIMARY KEY(id AUTOINCREMENT)
     )

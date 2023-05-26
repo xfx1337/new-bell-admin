@@ -80,5 +80,6 @@ def get_events_json(username=""):
             if username in e[-1]:
                 continue
         data["events"].append(json.loads(e[1]))
+        data["events"][-1]["event_id"] = e[0]
     
     return json.dumps(data, indent=4), 200

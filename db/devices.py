@@ -27,12 +27,16 @@ def get_info(db_id):
 
         return 0, content
 
-def get_info_json(db_id):
+def get_info_json(db_id, fully=False):
     ret, data = get_info(db_id)
     if ret != 0:
         return ret, data
-
-    ret = {"verified": data[1], "name": data[2], "host": data[6], "token": db.tokens.get_token(db_id)}
+    if not fully:
+        ret = {"verified": data[1], "name": data[2], "host": data[3], "token": db.tokens.get_token(db_id)}
+    else:
+        ret = {"verified": data[1], "name": data[2], "host": data[3], "password": data[4], "token": db.tokens.get_token(db_id), 
+               "lastseen": data[5], "lastlogs": data[6], "lastupdate": data[7], "region": data[8], 
+               'institution': data[9], "cpu_temp": data[10]}
     return 0, ret
 
 def add_unverified(host, password):
@@ -48,8 +52,8 @@ def add_unverified(host, password):
 def register(device):
     with lock:
         cursor.execute(f"""
-        UPDATE devices SET name = ?, region = ? WHERE id = ?
-        """, [device.name, device.region, device.id])
+        UPDATE devices SET name = ?, region = ?, institution = ? WHERE id = ?
+        """, [device.name, device.region, device.institution, device.id])
         connection.commit()
 
         return 0
