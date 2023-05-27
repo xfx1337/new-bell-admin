@@ -48,7 +48,7 @@ def refresh(req, token):
     readids = [] # already read ids
 
 
-    while datetime.now() < time_start + timedelta(minutes=1) and exit == False and stream.exit != True:
+    while datetime.now() < time_start + timedelta(seconds=5) and exit == False and stream.exit != True:
         time.sleep(5)
 
         if len(stream.queue.keys()) == 0:
