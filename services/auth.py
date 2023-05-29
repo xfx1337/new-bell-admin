@@ -14,7 +14,7 @@ def register_user(request):
     if "user" not in data:
         return "Invalid request", 400
 
-    if db.users.get_privileges(db.tokens.get_username(request.headers.get('Authorization'))[1]) != 'owner':
+    if db.users.get_privileges(db.tokens.get_username(request.headers.get('Authorization')))[1] != 'owner':
         return "Permission denied", 403
 
     user = User()
