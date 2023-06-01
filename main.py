@@ -173,8 +173,8 @@ def get_response():
 # for monitoring!
 @socketio.on('connect', namespace="/monitoring")
 def client_connect(auth):
-    if not db.tokens.valid_bearer(request.args.get('token')):
-       raise ConnectionRefusedError('unauthorized!')
+    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
+        return 'Permission denied', 403
     socketio.emit('response', {'data': 'connected', 'devices': services.info.get_devices()[0], "packets_sent": mon.packets_sent})
 
 @socketio.on('data_reload')
