@@ -11,16 +11,24 @@ class Stream:
         self.listeners_killer.start()
         self.listeners = {}
         self.lock = threading.Lock()
+        self._enable_callback = False
+        self._callback = None
 
     def add(self, data):
-        self.id += 1
-        self.queue[self.id] = {"viewed": [], "data": data}
+        with self.lock:
+            self.id += 1
+            self.queue[self.id] = {"viewed": [], "data": data}
+
+        if self._enable_callback:
+            self._callback(data, self.id)
+
         return self.exit
     
     def add_multiple(self, data):
-        for d in data:
-            self.queue[self.id] = {"viewed": [], "data": d}
-            self.id += 1
+        with self.lock:
+            for d in data:
+                self.queue[self.id] = {"viewed": [], "data": d}
+                self.id += 1
         return self.exit
 
     def read(self, unique, ids=[]): # unique = token or username or id
@@ -34,6 +42,11 @@ class Stream:
                         except: pass
             return self.exit
     
+    def force_read(self, id):
+        with self.lock:
+            try: del self.queue[id]
+            except: pass
+
     def close(self):
         self.exit = True
     
@@ -41,7 +54,17 @@ class Stream:
         return self
     
     def connect(self, unique):
+        if unique in self.listeners.keys():
+            if self.listeners[unique] == 1:
+                self.listeners[unique] = 2
+                return -1 # this says that we should before broken stream will end(someone disconnced in something fucking way and reconnected back)
         self.listeners[unique] = 1
+        return 1
+    
+    def connection_exist(self, unique):
+        if unique in self.listeners.keys():
+            return self.listeners[unique]
+        return 0
 
     def disconnect(self, unique):
         try:

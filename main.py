@@ -13,14 +13,73 @@ import services.auth
 import services.communication
 import services.info
 
+from monitoring import Monitoring
 
 from flask import Flask, jsonify, request, Response
+
+from flask_socketio import SocketIO, emit, send
+from flask_socketio import ConnectionRefusedError
 from flask_cors import CORS
 
-
+#import eventlet
 
 app = Flask(__name__)
 CORS(app)
+socketio = SocketIO(app)
+#eventlet.monkey_patch() # i dont fucken know what it is and why we need it
+
+# monitoring
+mon = Monitoring(app, socketio)
+
+
+
+# DONT DELETE
+import re
+@app.after_request
+def after_request(response):
+    response.headers.add('Accept-Ranges', 'bytes')
+    return response
+def get_chunk(byte1=None, byte2=None):
+    full_path = "vazelin.mp4"
+    file_size = os.stat(full_path).st_size
+    start = 0
+    
+    if byte1 < file_size:
+        start = byte1
+    if byte2:
+        length = byte2 + 1 - byte1
+    else:
+        length = file_size - start
+
+    with open(full_path, 'rb') as f:
+        f.seek(start)
+        chunk = f.read(length)
+    return chunk, start, length, file_size
+@app.route('/')
+def get_file():
+    range_header = request.headers.get('Range', None)
+    byte1, byte2 = 0, None
+    if range_header:
+        match = re.search(r'(\d+)-(\d*)', range_header)
+        groups = match.groups()
+
+        if groups[0]:
+            byte1 = int(groups[0])
+        if groups[1]:
+            byte2 = int(groups[1])
+       
+    chunk, start, length, file_size = get_chunk(byte1, byte2)
+    resp = Response(chunk, 206, mimetype='video/mp4',
+                      content_type='video/mp4', direct_passthrough=True)
+    resp.headers.add('Content-Range', 'bytes {0}-{1}/{2}'.format(start, start + length - 1, file_size))
+    return resp
+
+
+
+
+
+
+
 
 @app.route('/api/users/register', methods = ['POST'])
 def user_register():
@@ -81,7 +140,7 @@ def devices():
     elif request.method == 'POST':
         if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
             return 'Permission denied', 403
-    return services.info.get_unverified_devices(request) if request.args.get('unverified') in ('true', '') else services.info.get_devices(request)
+    return services.info.get_unverified_devices() if request.args.get('unverified') in ('true', '') else services.info.get_devices()
 
 @app.route('/api/devices/wait_for_registration', methods = ['POST'])
 def wait():
@@ -110,48 +169,25 @@ def get_response():
         return 'Permission denied', 403
     return services.communication.response(request, request.headers.get("Authorization").split()[1])
 
-@app.route('/api/admin/statistics_view', methods=['GET'])
-def statistics_view():
-    if not db.tokens.valid(request.args.get('token')): 
-        return 'Permission denied', 403
-    
-    return f'''<div>statistics</div>
-    <script>
-        var last_index = 0;
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/api/admin/statistics");
-        xhr.setRequestHeader("Authorization", "Bearer {request.args.get('token')}");
-        xhr.onprogress = function () {{
-            var curr_index = xhr.responseText.length;
-            if (last_index == curr_index) return; 
-            var s = xhr.responseText.substring(last_index, curr_index);
-            last_index = curr_index;
-            
-            var div = document.createElement('div');
-            div.innerHTML = s;
-            console.log(s)
-            document.body.appendChild(div);
 
-        }};
-        xhr.send();
-    </script>
-    ''', request.args.get('token')
+# for monitoring!
+@socketio.on('connect', namespace="/monitoring")
+def client_connect(auth):
+    if not db.tokens.valid_bearer(request.args.get('token')):
+       raise ConnectionRefusedError('unauthorized!')
+    socketio.emit('response', {'data': 'connected', 'devices': services.info.get_devices()[0], "packets_sent": mon.packets_sent})
 
-@app.route('/api/admin/statistics', methods = ['POST'])
-def statistics():
-    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
-        return 'Permission denied', 403
-    
-    breaktime = datetime.now() + timedelta(minutes=5)
+@socketio.on('data_reload')
+def data_reload(data):
+    socketio.emit('response', {'data': 'connected', 'devices': services.info.get_devices()[0], "packets_sent": mon.packets_sent})
 
-    if request.data:
-        data = request.get_json()
-        if "breaktime" not in data:
-            breaktime = datetime.now() + timedelta(minutes=5)
-        else:
-            breaktime = datetime.now() + data["breaktime"]
+@socketio.on('request')
+def message(data):
+    emit("response", {'data': 'read'})
 
-    return Response(services.info.statistics_stream(request, request.headers.get("Authorization").split()[1], breaktime), mimetype="text/event-stream")
+@socketio.on('disconnect')
+def client_disconnect():
+    pass
 
 
 if __name__ == '__main__':
@@ -162,3 +198,4 @@ if __name__ == '__main__':
 
     app.run(threaded=True, debug=True, host="0.0.0.0")
     CORS(app)
+    socketio.run(app)
