@@ -3,6 +3,7 @@ from singleton import singleton
 from streaming.singletone_streams import DeviceRefreshingStream, DeviceRequestStream, DeviceResponseStream
 
 import db.tokens
+import db.devices
 
 from flask import Flask, current_app
 from flask_socketio import emit
@@ -27,6 +28,7 @@ class Monitoring: # skin for StatStream
             self.socketio.emit('update', data, namespace="/monitoring")
             self.socketio.emit('response', {'data': 'got'}, namespace="/refreshing")
         self.packets_sent += 1
+        db.devices.handle_info_update(data)
         self.ref_stream.read(id)
 
     def _req_callback(self, data, id):
