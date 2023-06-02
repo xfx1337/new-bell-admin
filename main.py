@@ -17,7 +17,7 @@ from monitoring import Monitoring
 
 from flask import Flask, jsonify, request, Response
 
-from flask_socketio import SocketIO, emit, send
+from flask_socketio import SocketIO, emit, send, Namespace
 from flask_socketio import ConnectionRefusedError
 from flask_cors import CORS
 
@@ -172,20 +172,43 @@ def get_response():
 
 # for monitoring!
 @socketio.on('connect', namespace="/monitoring")
-def client_connect(auth):
+def admin_connect(auth):
     if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
+        return 'Permission denied', 403
+    ret, priv = db.users.get_privileges(db.tokens.get_username(request.headers.get('Authorization'))[1])
+    if priv != "owner" and priv != "admin":
         return 'Permission denied', 403
     socketio.emit('response', {'data': 'connected', 'devices': services.info.get_devices()[0], "packets_sent": mon.packets_sent})
 
-@socketio.on('data_reload')
-def data_reload(data):
-    socketio.emit('response', {'data': 'connected', 'devices': services.info.get_devices()[0], "packets_sent": mon.packets_sent})
+@socketio.on('data_reload', namespace="/monitoring")
+def admin_data_reload(data):
+    socketio.emit('response', {'data': 'reloaded', 'devices': services.info.get_devices()[0], "packets_sent": mon.packets_sent})
 
-@socketio.on('request')
-def message(data):
-    emit("response", {'data': 'read'})
+@socketio.on('request', namespace="/monitoring")
+def admin_request(data):
+    mon.req_stream.add(data)
 
-@socketio.on('disconnect')
+@socketio.on('disconnect', namespace="/monitoring")
+def admin_disconnect():
+    pass
+
+
+# for devices
+@socketio.on('connect', namespace="/refreshing")
+def device_connect(auth):
+    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
+        return 'Permission denied', 403
+    socketio.emit('response', {'data': 'connected'})
+
+@socketio.on('refresh', namespace="/refreshing")
+def device_refresh(data):
+    mon.ref_stream.add(data)
+
+@socketio.on('response', namespace="/refreshing")
+def device_response(data):
+    mon.res_stream.add(data)
+
+@socketio.on('disconnect', namespace="/refreshing")
 def client_disconnect():
     pass
 

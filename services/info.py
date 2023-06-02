@@ -4,8 +4,6 @@ import db.users
 import db.devices
 import db.admin_events
 
-from streaming.stat_stream import StatStream
-
 import json
 from datetime import datetime, timedelta
 

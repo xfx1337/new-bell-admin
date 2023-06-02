@@ -7,9 +7,6 @@ class Stream:
         self.queue = {}
         self.id = 0
         self.exit = False
-        self.listeners_killer = threading.Thread(target=self._killer)
-        self.listeners_killer.start()
-        self.listeners = {}
         self.lock = threading.Lock()
         self._enable_callback = False
         self._callback = None
@@ -17,73 +14,21 @@ class Stream:
     def add(self, data):
         with self.lock:
             self.id += 1
-            self.queue[self.id] = {"viewed": [], "data": data}
+            self.queue[self.id] = data
 
         if self._enable_callback:
             self._callback(data, self.id)
 
         return self.exit
     
-    def add_multiple(self, data):
-        with self.lock:
-            for d in data:
-                self.queue[self.id] = {"viewed": [], "data": d}
-                self.id += 1
-        return self.exit
-
-    def read(self, unique, ids=[]): # unique = token or username or id
-        with self.lock:
-            for i in range(len(ids)): # only like this!
-                if ids[i] in self.queue.keys():
-                    if unique not in self.queue[ids[i]]["viewed"]:
-                        self.queue[ids[i]]["viewed"].append(unique)
-                    if len(self.queue[ids[i]]["viewed"]) >= len(self.listeners.keys()):
-                        try: del self.queue[ids[i]]
-                        except: pass
-            return self.exit
-    
-    def force_read(self, id):
+    def read(self, id):
         with self.lock:
             try: del self.queue[id]
             except: pass
 
     def close(self):
         self.exit = True
-    
-    def get_stream(self):
-        return self
-    
-    def connect(self, unique):
-        if unique in self.listeners.keys():
-            if self.listeners[unique] == 1:
-                self.listeners[unique] = 2
-                return -1 # this says that we should before broken stream will end(someone disconnced in something fucking way and reconnected back)
-        self.listeners[unique] = 1
-        return 1
-    
-    def connection_exist(self, unique):
-        if unique in self.listeners.keys():
-            return self.listeners[unique]
-        return 0
 
-    def disconnect(self, unique):
-        try:
-            self.listeners.pop(unique)
-        except:
-            pass
-    
-    def _killer(self):
-        pass # temprorary DISABLED
-        # while self.close != True:
-        #     time.sleep(20)
-        #     with self.lock:
-        #         if len(self.queue.keys()) != 0:
-        #             if self.id in self.queue.keys():
-        #                 if len(self.listeners.keys()) != len(self.queue[self.id]["viewed"]):
-        #                     for viewer in self.queue[self.id]["viewed"]:
-        #                         if viewer not in self.listeners.keys():
-        #                             self.disconnect(viewer)
-        #                     for i in range(self.id-1):
-        #                         if self.id in self.queue.keys():
-        #                             del self.queue[self.id]
-            
+    def set_callback(self, callback):
+        self._callback = callback
+        self._enable_callback = True

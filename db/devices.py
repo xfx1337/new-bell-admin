@@ -1,9 +1,6 @@
 import sqlite3
 import threading
 
-from streaming.exec_stream import ExecStream
-from streaming.stat_stream import StatStream
-
 import user
 from datetime import datetime
 import db.tokens
@@ -121,11 +118,6 @@ def get_box_count_verified():
         SELECT * FROM devices WHERE verified = ?
         """, [1])
         return len(cursor.fetchall())
-
-def request(request):
-    stream = ExecStream(get_box_count_verified)
-    id = stream.add(request.get_json())
-    return {"id": int(id)}, 200
 
 def handle_info_update(data):
     valid_keys = []
