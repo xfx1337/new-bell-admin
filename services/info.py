@@ -31,12 +31,6 @@ def get_device_info_json(req):
     return db.devices.get_info_json(data["id"], True)[1], 200
 
 def get_sql(req):
-    ret, priv = db.users.get_privileges(db.tokens.get_username(req.headers.get('Authorization'))[1])
-    if ret != 0:
-        return "Wrong request", 400
-    if priv != "owner" and priv != "admin":
-        return "Permission denied", 403
-    
     data = req.get_json()
     if "table" not in data:
         return "Bad request", 400

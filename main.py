@@ -171,6 +171,10 @@ def get_response():
 def sql_get():
     if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
         return 'Permission denied', 403
+    ret, priv = db.users.get_privileges(db.tokens.get_username(request.headers.get('Authorization'))[1])
+    if priv != "owner" and priv != "admin":
+        return 'Permission denied', 403
+
     return services.info.get_sql(request)
 
 # for monitoring!
