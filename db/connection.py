@@ -2,9 +2,12 @@ valid_device_keys = ["host", "password", "lastupdate", "lastlogs", "cpu_temp", "
 
 import sqlite3
 import hashlib
+import threading
 
 connection = sqlite3.connect('database.db', check_same_thread=False)
 cursor = connection.cursor()
+
+lock = threading.Lock()
 
 def exists() -> bool:
     cursor.execute(f"""
@@ -77,3 +80,7 @@ def create_database():
 
     connection.commit()
 
+def sql_get(sql):
+    with lock:
+        cursor.execute(sql)
+        return cursor.fetchall()[0]

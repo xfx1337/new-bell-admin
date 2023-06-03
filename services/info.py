@@ -3,6 +3,7 @@ import db.tokens
 import db.users
 import db.devices
 import db.admin_events
+import db.connection
 
 import json
 from datetime import datetime, timedelta
@@ -32,18 +33,13 @@ def get_device_info_json(req):
 
 def get_sql(req):
     data = req.get_json()
-    if "table" not in data:
-        return "Bad request", 400
     if "query" not in data:
         return "Bad request", 400
     
     out = None
-
-    if data["table"] == "devices":
-        out = db.devices.sql_get(data["query"])
-    if data["table"] == "tokens":
-        out = db.tokens.sql_get(data["query"])
-    if data["table"] == "users":
-        out = db.users.sql_get(data["query"])
+    try:
+        out = db.connection.sql_get(data["query"])
+    except:
+        return "Couldn't execute sql", 500
 
     return {"data": out}, 200
