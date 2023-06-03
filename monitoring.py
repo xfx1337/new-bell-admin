@@ -8,6 +8,8 @@ import db.devices
 from flask import Flask, current_app
 from flask_socketio import emit
 
+from datetime import datetime
+
 @singleton
 class Monitoring: # skin for StatStream
     def __init__(self, app, socketio):
@@ -28,6 +30,7 @@ class Monitoring: # skin for StatStream
             self.socketio.emit('update', data, namespace="/monitoring")
             self.socketio.emit('response', {'data': 'got'}, namespace="/refreshing")
         self.packets_sent += 1
+        data["lastseen"] = datetime.timestamp(datetime.now())
         db.devices.handle_info_update(data)
         self.ref_stream.read(id)
 

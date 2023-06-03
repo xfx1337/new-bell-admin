@@ -132,7 +132,7 @@ def handle_info_update(data):
     for key in valid_keys:
         sql = sql + key + "=\"" + str(data[key]) + "\", "
     
-    sql = sql + "lastseen = \"" + datetime.now().strftime("%d.%m.%Y %H:%M:%S") + "\", "
+    sql = sql + "lastseen = \"" +  datetime.fromtimestamp(int(data["lastseen"])).strftime("%d.%m %H:%M:%S") + "\", "
 
     sql = sql[:-2]
     sql = sql + " WHERE id=" + str(data["id"])
