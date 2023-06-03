@@ -131,6 +131,9 @@ def handle_info_update(data):
     sql = "UPDATE devices SET "
     for key in valid_keys:
         sql = sql + key + "=\"" + str(data[key]) + "\", "
+    
+    sql = sql + "lastseen = \"" + datetime.now().strftime("%d.%m.%Y %H:%M:%S") + "\", "
+
     sql = sql[:-2]
     sql = sql + " WHERE id=" + str(data["id"])
     with lock:

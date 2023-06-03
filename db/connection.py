@@ -1,4 +1,4 @@
-valid_device_keys = ["host", "password", "lastupdate", "last_logs", "cpu_temp", "institution"]
+valid_device_keys = ["host", "password", "lastupdate", "lastlogs", "cpu_temp", "institution"]
 
 import sqlite3
 import hashlib
