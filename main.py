@@ -21,12 +21,9 @@ from flask_socketio import SocketIO, emit, send, Namespace
 from flask_socketio import ConnectionRefusedError
 from flask_cors import CORS
 
-#import eventlet
-
 app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app)
-#eventlet.monkey_patch() # i dont fucken know what it is and why we need it
 
 # monitoring
 mon = Monitoring(app, socketio)
@@ -73,9 +70,6 @@ def get_file():
                       content_type='video/mp4', direct_passthrough=True)
     resp.headers.add('Content-Range', 'bytes {0}-{1}/{2}'.format(start, start + length - 1, file_size))
     return resp
-
-
-
 
 
 @app.route('/api/valid_token', methods=['POST'])
