@@ -26,11 +26,11 @@ class Monitoring: # skin for StatStream
         self.res_stream.set_callback(self._res_callback)
         
     def _ref_callback(self, data, id):
+        data["lastseen"] = datetime.timestamp(datetime.now())
         with self.app.app_context():
             self.socketio.emit('update', data, namespace="/monitoring")
             self.socketio.emit('response', {'data': 'got'}, namespace="/refreshing")
         self.packets_sent += 1
-        data["lastseen"] = datetime.timestamp(datetime.now())
         db.devices.handle_info_update(data)
         self.ref_stream.read(id)
 
