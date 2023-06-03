@@ -167,6 +167,11 @@ def get_response():
         return 'Permission denied', 403
     return services.communication.response(request, request.headers.get("Authorization").split()[1])
 
+@app.route('/api/admin/sql_get', methods=["POST"])
+def sql_get():
+    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
+        return 'Permission denied', 403
+    return services.info.get_sql(request)
 
 # for monitoring!
 @socketio.on('connect', namespace="/monitoring")

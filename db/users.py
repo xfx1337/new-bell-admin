@@ -74,3 +74,8 @@ def get_privileges(username):
             return -1, "No user with username",
         
         return 0, content[3]
+
+def sql_get(sql):
+    with lock:
+        cursor.execute(sql)
+        return cursor.fetchall()

@@ -112,3 +112,8 @@ def renew_token(username):
         connection.commit()
         
         return 0
+
+def sql_get(sql):
+    with lock:
+        cursor.execute(sql)
+        return cursor.fetchall()

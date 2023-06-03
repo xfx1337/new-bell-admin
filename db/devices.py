@@ -141,3 +141,8 @@ def handle_info_update(data):
             connection.commit()
         except Exception as e:
             print(e)
+
+def sql_get(sql):
+    with lock:
+        cursor.execute(sql)
+        return cursor.fetchall()
