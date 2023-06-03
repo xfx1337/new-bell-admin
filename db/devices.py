@@ -132,7 +132,7 @@ def handle_info_update(data):
     for key in valid_keys:
         sql = sql + key + "=\"" + str(data[key]) + "\", "
     
-    sql = sql + "lastseen = " +  int(data["lastseen"])
+    sql = sql + "lastseen = " +  str(data["lastseen"])
 
     sql = sql + " WHERE id=" + str(data["id"])
     with lock:
