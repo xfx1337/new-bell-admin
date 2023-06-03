@@ -78,7 +78,11 @@ def get_file():
 
 
 
-
+@app.route('/api/valid_token', methods=['POST'])
+def valid_token():
+    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
+        return 'Token is not valid', 403
+    return "Token is valid", 200
 
 
 @app.route('/api/users/register', methods = ['POST'])
