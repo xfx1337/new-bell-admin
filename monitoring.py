@@ -28,7 +28,7 @@ class Monitoring: # skin for StatStream
     def _ref_callback(self, data, id):
         data["lastseen"] = int(datetime.timestamp(datetime.now()))
         with self.app.app_context():
-            self.socketio.emit('update', data, namespace="/monitoring")
+            self.socketio.emit('update', data, namespace="/mainIO")
             self.socketio.emit('response', {'data': 'got'}, namespace="/refreshing")
         self.packets_sent += 1
         db.devices.handle_info_update(data)
@@ -42,5 +42,5 @@ class Monitoring: # skin for StatStream
     
     def _res_callback(self, data, id):
         with self.app.app_context():
-            self.socketio.emit('response', {'id': id, 'content': data}, namespace="/monitoring")
+            self.socketio.emit('response', {'content': data}, namespace="/mainIO")
         self.res_stream.read(id)

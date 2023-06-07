@@ -178,24 +178,24 @@ def sql_get():
     return services.info.get_sql(request)
 
 # for monitoring!
-@socketio.on('connect', namespace="/monitoring")
+@socketio.on('connect', namespace="/mainIO")
 def admin_connect(auth):
     if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
         return 'Permission denied', 403
     ret, priv = db.users.get_privileges(db.tokens.get_username(request.headers.get('Authorization')))
     if priv != "owner" and priv != "admin":
         return 'Permission denied', 403
-    socketio.emit('response', {'data': 'connected', 'devices': services.info.get_devices()[0], "packets_sent": mon.packets_sent})
+    #socketio.emit('establish', {'data': 'connected', 'devices': services.info.get_devices()[0], "packets_sent": mon.packets_sent})
 
-@socketio.on('data_reload', namespace="/monitoring")
+@socketio.on('data_reload', namespace="/mainIO")
 def admin_data_reload(data):
     socketio.emit('response', {'data': 'reloaded', 'devices': services.info.get_devices()[0], "packets_sent": mon.packets_sent})
 
-@socketio.on('request', namespace="/monitoring")
+@socketio.on('request', namespace="/mainIO")
 def admin_request(data):
     mon.req_stream.add(data)
 
-@socketio.on('disconnect', namespace="/monitoring")
+@socketio.on('disconnect', namespace="/mainIO")
 def admin_disconnect():
     pass
 

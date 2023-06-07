@@ -83,4 +83,5 @@ def create_database():
 def sql_get(sql):
     with lock:
         cursor.execute(sql)
-        return cursor.fetchall()[0]
+        result = cursor.fetchall()
+        return result
