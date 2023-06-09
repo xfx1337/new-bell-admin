@@ -28,8 +28,6 @@ socketio = SocketIO(app)
 # monitoring
 mon = Monitoring(app, socketio)
 
-
-
 # DONT DELETE
 import re
 @app.after_request
@@ -116,7 +114,8 @@ def get_events():
 def read_events():
     if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
         return 'Permission denied', 403
-    return services.info.read_events(request)
+    return "NOT IMPLEMENTED", 400
+    #return services.info.read_events(request)
 
 @app.route('/api/users/info', methods = ['POST'])
 def user_info():
@@ -156,11 +155,6 @@ def admin_request():
         return 'Permission denied', 403
     return services.communication.request(request)
 
-    # {"type": "UPDATE", "ids": [0, 2, 5]}
-    # {"type": "EXECUTE", "ids": [0, 2, 5], "PROMPT": "reboot"}
-    # {"type": "LOCK", "ids": [0, 2, 5]}
-    # {"type": "UNLOCK", "ids": [0, 2, 5]}
-
 @app.route('/api/devices/response', methods=['POST'])
 def get_response():
     if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
@@ -176,6 +170,25 @@ def sql_get():
         return 'Permission denied', 403
 
     return services.info.get_sql(request)
+
+@app.route('/api/admin/get_processes', methods=["POST", "GET"])
+def get_processes():
+    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
+        return 'Permission denied', 403
+    return services.info.get_processes(request)
+
+@app.route('/api/admin/process_info', methods=["POST"])
+def get_process_info():
+    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
+        return 'Permission denied', 403
+    return services.info.get_process_info(request)
+
+@app.route('/api/admin/get_process_responses', methods=["POST"])
+def get_process_responses():
+    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
+        return 'Permission denied', 403
+    return services.info.get_process_responses(request)
+
 
 # for monitoring!
 @socketio.on('connect', namespace="/mainIO")
@@ -211,7 +224,7 @@ def device_connect(auth):
 def device_refresh(data):
     mon.ref_stream.add(data)
 
-@socketio.on('response', namespace="/refreshing")
+@socketio.on('device_response', namespace="/refreshing")
 def device_response(data):
     mon.res_stream.add(data)
 

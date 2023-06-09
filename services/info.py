@@ -3,6 +3,7 @@ import db.tokens
 import db.users
 import db.devices
 import db.admin_events
+import db.processes
 import db.connection
 
 import json
@@ -43,3 +44,45 @@ def get_sql(req):
         return "Couldn't execute sql", 500
 
     return {"data": out}, 200
+
+def get_processes(req):
+    data = db.processes.get_all()
+    send = {"data": []}
+    for p in data:
+        send["data"].append({"execution_id": p[1], 
+                     "ids": list(map(int, p[2].split())),
+                     "cmd": p[3],
+                     "time": p[4],
+                     "failsafe_mode": bool(p[5]),
+                     "failafe_timeout": float(p[6]),
+                     "wait_mode": bool(p[7]),
+                     "status": p[8]})
+    return send, 200
+
+def get_process_info(req):
+    if "execution_id" not in req.get_json():
+        return "Bad request", 400
+    try:
+        p = db.processes.get_info(req.get_json()["execution_id"])
+        return {"data": {"execution_id": p[1], 
+                     "ids": list(map(int, p[2].split())),
+                     "cmd": p[3],
+                     "time": p[4],
+                     "failsafe_mode": bool(p[5]),
+                     "failsafe_timeout": float(p[6]),
+                     "wait_mode": bool(p[7]),
+                     "status": p[8]}}, 200
+    except:
+        return "Wrong execution_id", 400
+
+def get_process_responses(req):
+    if "execution_id" not in req.get_json():
+        return "Bad request", 400
+    try:
+        responses = db.processes.get_responses(req.get_json()["execution_id"])
+        data = {"data": []}
+        for r in responses:
+            data["data"].append({"content": {"id": r[2], "response": r[3], "errors": r[4], "time": r[5]}})
+        return data, 200
+    except:
+        return "Wrong execution_id", 400

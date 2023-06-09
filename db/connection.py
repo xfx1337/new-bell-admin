@@ -78,6 +78,33 @@ def create_database():
     )
     """)
 
+    cursor.execute(f"""
+    CREATE TABLE IF NOT EXISTS devices_processes (
+        id INTEGER,
+        execution_id TEXT,
+        ids TEXT,
+        cmd TEXT,
+        time INTEGER,
+        failsafe_mode INTEGER,
+        failsafe_timeout TEXT,
+        wait_mode INTEGER,
+        status TEXT,
+        PRIMARY KEY(id AUTOINCREMENT)
+    )            
+    """)
+
+    cursor.execute(f"""
+    CREATE TABLE IF NOT EXISTS devices_processes_responses (
+        id INTEGER,
+        execution_id TEXT,
+        device_id TEXT,
+        response TEXT,
+        errors TEXT,
+        response_time INTEGER,
+        PRIMARY KEY(id AUTOINCREMENT)
+    )               
+    """)
+
     connection.commit()
 
 def sql_get(sql):
