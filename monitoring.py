@@ -60,7 +60,9 @@ class Monitoring: # skin for StatStream
                                        {"data": "Process interruption started. You can close process after it will be completely terminated.", 
                                         "execution_id": data["execution_id"]}, 
                                         namespace="/mainIO")
-                    
+                    if data["execution_id"] == "all":
+                        db.processes.close_done()
+
                 elif text == "DB_REQUEST_INTERRUPT":
                     ids = db.processes.get_info(data["execution_id"])[2]
                     if ids != "all":
@@ -79,8 +81,11 @@ class Monitoring: # skin for StatStream
         data["id"] = int(db.tokens.get_username(data["token"]))
         data["time"] = int(datetime.timestamp(datetime.now()))
         with self.app.app_context():
-            self.socketio.emit('response', {'content': data}, namespace="/mainIO")
-        ret, text = self.res_stream.check(id)
-        if ret != 0:
-            self.socketio.emit('device_response_error', {"data": text}, namespace="/mainIO")
+            self.socketio.emit('response', data, namespace="/mainIO")
+            ret, text = self.res_stream.check(id)
+            if ret == 0:
+                if text == "DB_REQUEST_PROCESS_END":
+                    self.socketio.emit("process_end", {"data": "Process ended", "execution_id": data["execution_id"]}, namespace="/mainIO")
+            else:
+                self.socketio.emit('device_response_error', {"data": text}, namespace="/mainIO")
         self.res_stream.read(id)

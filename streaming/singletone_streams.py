@@ -46,6 +46,11 @@ class DeviceResponseStream(Stream):
     def check(self, id):
         request = self.queue[id]
         if request["type"] == "device_response":
-            try: db.processes.response(request["execution_id"], request["id"], request["response"], request["errors"], request["time"])
+            try: 
+                ret = db.processes.response(request["execution_id"], request["id"], request["response"], request["errors"], request["time"])
+                if ret == 1:
+                    return 0, "DB_REQUEST_PROCESS_END"
+
+
             except: return -1, "Failed to add to db"
         return 0, "DONE"

@@ -86,3 +86,12 @@ def get_process_responses(req):
         return data, 200
     except:
         return "Wrong execution_id", 400
+
+def read_events(req):
+    data = req.get_json()
+    if "ids" not in data:
+        return "Bad request", 400
+    for id in data["ids"]:
+        db.admin_events.read(id, db.tokens.get_username(req.headers.get("Authorization").split()[1]))
+
+    return "Read", 200

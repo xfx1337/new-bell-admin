@@ -1,6 +1,7 @@
 import threading
 import time
 import db.devices
+import uuid
 
 class Stream:
     def __init__(self):
@@ -13,7 +14,7 @@ class Stream:
 
     def add(self, data):
         with self.lock:
-            self.id += 1
+            self.id = uuid.uuid4().hex.upper()
             self.queue[self.id] = data
 
         if self._enable_callback:

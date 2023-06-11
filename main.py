@@ -114,8 +114,7 @@ def get_events():
 def read_events():
     if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
         return 'Permission denied', 403
-    return "NOT IMPLEMENTED", 400
-    #return services.info.read_events(request)
+    return services.info.read_events(request)
 
 @app.route('/api/users/info', methods = ['POST'])
 def user_info():
@@ -188,6 +187,12 @@ def get_process_responses():
     if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
         return 'Permission denied', 403
     return services.info.get_process_responses(request)
+
+@app.route('/api/devices/sync_processes', methods=["POST"])
+def sync_processes():
+    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
+        return 'Permission denied', 403
+    return services.communication.sync_processes(request)
 
 
 # for monitoring!

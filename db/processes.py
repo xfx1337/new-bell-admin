@@ -78,6 +78,7 @@ def response(execution_id, device_id, response, errors, response_time):
                 UPDATE devices_processes SET status = ? WHERE execution_id = ?
                             """, ["DONE", execution_id])
                 connection.commit()
+                return 1
     return 0
     
 def get_responses(execution_id):
@@ -86,3 +87,53 @@ def get_responses(execution_id):
         SELECT * FROM devices_processes_responses WHERE execution_id = ?
                        """, [execution_id])
         return cursor.fetchall()
+    
+def close_done():
+    with lock:
+        cursor.execute(f"""
+        SELECT execution_id FROM devices_processes WHERE status = ?
+                       """, ["DONE"])
+        content = cursor.fetchall()
+    if len(content) != 0:
+        with lock:
+            cursor.execute(f"""
+            DELETE FROM devices_processes WHERE status = ?
+                        """, ["DONE"])
+            connection.commit()
+        
+        delete_ids = []
+        for id in content:
+            delete_ids.append([id[0]])
+
+        with lock:
+            cursor.executemany(f"""DELETE FROM devices_processes_responses WHERE execution_id = ?""", delete_ids)
+            connection.commit()
+
+def sync_processes(device_id):
+    with lock:
+        cursor.execute(f"""
+        SELECT * FROM devices_processes WHERE status = 'IN_PROGRESS' AND ids LIKE ?
+                       """, ["%" + str(device_id) + "%"])
+        processes = cursor.fetchall()
+    
+    select_ids = []
+    for id in processes:
+        select_ids.append(id[1])
+    
+    with lock:
+        cursor.execute(f"""
+        SELECT execution_id FROM devices_processes_responses WHERE device_id = {device_id} AND execution_id IN ({str(select_ids).replace("[", "").replace("]", "")})
+                       """)
+        content = cursor.fetchall()
+
+    real_ids = []
+    for id in content:
+        real_ids.append(id[1])
+
+    to_sync = []
+
+    for p in processes:
+        if p[1] not in real_ids:
+            to_sync.append(p)
+    
+    return to_sync
