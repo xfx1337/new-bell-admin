@@ -116,6 +116,12 @@ def read_events():
         return 'Permission denied', 403
     return services.info.read_events(request)
 
+@app.route('/api/admin/create_event', methods = ['POST'])
+def create_event():
+    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
+        return 'Permission denied', 403
+    return services.info.create_event(request)
+
 @app.route('/api/users/info', methods = ['POST'])
 def user_info():
     if not db.tokens.valid_bearer(request.headers.get("Authorization")): 

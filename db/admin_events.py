@@ -11,48 +11,27 @@ lock = threading.Lock()
 def add(evt):
     with lock:
         cursor.execute(f"""
-        INSERT INTO admin_events (payload, users_read) VALUES (?, ?)
-        """, [evt.toJSON(), ""]) # no users read already
+        INSERT INTO admin_events (payload) VALUES (?)
+        """, [evt.toJSON()]) # no users read already
         id = cursor.lastrowid
         connection.commit()
         return id
 
-def read(id, username):
-    with lock:
-        cursor.execute(f"""
-        SELECT * FROM admin_events WHERE id = ?
-        """, [id])
-        content = cursor.fetchone()
-        if content == None:
-            return -1
-        
-        users_read = content[-1].split()
-        if username in users_read:
-            return 0
-        users_read.append(username)
-        users_read = str(users_read).replace(", ", "").replace("[", "").replace("]", "")
-        cursor.execute(f"""
-        UPDATE admin_events SET users_read = ? WHERE id = ?
-        """, [users_read, id])
-        connection.commit()
-    return close(id)
-    
 def close(id):
     with lock:
+        if id == "all":
+            cursor.execute(f"""
+            DELETE FROM admin_events
+            """, [id])
+            connection.commit()
+            return 0
+
         cursor.execute(f"""
         SELECT * FROM admin_events WHERE id = ?
         """, [id])
         content = cursor.fetchone()
         if content == None:
             return -1
-        
-        users_read = content[-1].split()
-
-        cursor.execute(f"""
-        SELECT * FROM users WHERE privileges in ("admin", "owner")
-        """)
-        if len(users_read) != len(cursor.fetchall()):
-            return 0
         
         cursor.execute(f"""
             DELETE FROM admin_events WHERE id = ?
@@ -76,9 +55,6 @@ def get_events_json(username=""):
     data = {"events": []}
 
     for e in events:
-        if username != "":
-            if username in e[-1]:
-                continue
         data["events"].append(json.loads(e[1]))
         data["events"][-1]["event_id"] = e[0]
     

@@ -6,6 +6,8 @@ import db.admin_events
 import db.processes
 import db.connection
 
+import Events
+
 import json
 from datetime import datetime, timedelta
 
@@ -92,6 +94,14 @@ def read_events(req):
     if "ids" not in data:
         return "Bad request", 400
     for id in data["ids"]:
-        db.admin_events.read(id, db.tokens.get_username(req.headers.get("Authorization").split()[1]))
+        db.admin_events.close(id)
 
     return "Read", 200
+
+def create_event(req):
+    data = req.get_json()
+    try: 
+        ret = db.admin_events.add(Events.AdminEvent(data["status"], data["message"]))
+        return {"id": ret}, 200
+
+    except: return "Someting went wrong", 500

@@ -15,3 +15,10 @@ class DeviceRegisterEvent(Event):
         self.type = "DeviceRegisterEvent"
         self.host = host
         self.device_id = id
+
+class AdminEvent(Event):
+    def __init__(self, status, message, time=datetime.now()):
+        super().__init__(time)
+        self.type = "AdminEvent"
+        self.status = status
+        self.message = message

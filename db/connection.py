@@ -73,7 +73,6 @@ def create_database():
     CREATE TABLE IF NOT EXISTS admin_events (
         id INTEGER,
         payload TEXT,
-        users_read TEXT,
         PRIMARY KEY(id AUTOINCREMENT)
     )
     """)
