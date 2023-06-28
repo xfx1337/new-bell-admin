@@ -22,7 +22,7 @@ def close(id):
         if id == "all":
             cursor.execute(f"""
             DELETE FROM admin_events
-            """, [id])
+            """)
             connection.commit()
             return 0
 
