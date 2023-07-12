@@ -76,6 +76,11 @@ def valid_token():
         return 'Token is not valid', 403
     return "Token is valid", 200
 
+@app.route('/api/users/list', methods=['POST'])
+def list_users():
+    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
+        return 'Permission denied', 403
+    return services.info.list_users(request)
 
 @app.route('/api/users/register', methods = ['POST'])
 def user_register():
@@ -147,24 +152,6 @@ def devices():
 @app.route('/api/devices/wait_for_registration', methods = ['POST'])
 def wait():
     return services.communication.device_wait_for_registration(request)
-
-@app.route('/api/devices/refresh', methods = ['POST'])
-def refresh():
-    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
-        return 'Permission denied', 403
-    return services.communication.refresh(request, request.headers.get("Authorization").split()[1])
-
-@app.route('/api/admin/request', methods=['POST'])
-def admin_request():
-    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
-        return 'Permission denied', 403
-    return services.communication.request(request)
-
-@app.route('/api/devices/response', methods=['POST'])
-def get_response():
-    if not db.tokens.valid_bearer(request.headers.get("Authorization")): 
-        return 'Permission denied', 403
-    return services.communication.response(request, request.headers.get("Authorization").split()[1])
 
 @app.route('/api/admin/sql_get', methods=["POST"])
 def sql_get():

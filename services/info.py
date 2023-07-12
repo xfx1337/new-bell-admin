@@ -28,6 +28,14 @@ def get_user_info(req):
     
     return {"privileges": db.users.get_privileges(data["username"])[1]}, 200
 
+def list_users(req):
+    users = db.users.get_all()
+    out = []
+    for u in users:
+        out.append({"username": u[1], "privileges": u[3]})
+    return {"data": out}, 200
+
+
 def get_device_info_json(req):
     data = req.get_json()
     if "id" not in data:

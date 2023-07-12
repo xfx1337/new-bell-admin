@@ -75,6 +75,14 @@ def get_privileges(username):
         
         return 0, content[3]
 
+def get_all():
+    with lock:
+        cursor.execute(f"""
+        SELECT * FROM users
+                       """)
+        content = cursor.fetchall()
+        return content
+
 def sql_get(sql):
     with lock:
         cursor.execute(sql)
